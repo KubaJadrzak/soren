@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "sofio/version"
+require_relative "soren/version"
 
-module Sofio
+module Soren
   class Error < StandardError; end
   # Your code goes here...
 end

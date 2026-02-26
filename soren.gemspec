@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/sofio/version"
+require_relative "lib/soren/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "sofio"
-  spec.version = Sofio::VERSION
+  spec.name = "soren"
+  spec.version = Soren::VERSION
   spec.authors = ["KubaJadrzak"]
   spec.email = ["kuba.jadrzak@gmail.com"]
 

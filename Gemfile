@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in sofio.gemspec
+# Specify your gem's dependencies in soren.gemspec
 gemspec
 
 gem "irb"
