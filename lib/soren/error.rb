@@ -6,3 +6,5 @@ module Soren
     class Base < StandardError; end
   end
 end
+
+require_relative 'error/argument_error'
