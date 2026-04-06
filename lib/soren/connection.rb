@@ -9,12 +9,15 @@ require_relative 'types/connection/host'
 require_relative 'types/connection/port'
 require_relative 'types/connection/scheme'
 require_relative 'types/connection/uri'
+require_relative 'config'
 require_relative 'response'
 
 module Soren
   class Connection
-    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped) -> void
-    def initialize(host: nil, port: nil, scheme: nil, uri: nil)
+    attr_reader :config #: Soren::Config?
+
+    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped, ?config: untyped) -> void
+    def initialize(host: nil, port: nil, scheme: nil, uri: nil, config: nil)
       if uri
         unless host.nil? && port.nil? && scheme.nil?
           raise Soren::Error::ArgumentError,
@@ -33,6 +36,7 @@ module Soren
       @host = Soren::Types::Connection::Host.new(host) #: Soren::Types::Connection::Host
       @port = Soren::Types::Connection::Port.new(port) #: Soren::Types::Connection::Port
       @scheme = Soren::Types::Connection::Scheme.new(scheme) #: Soren::Types::Connection::Scheme
+      @config = normalize_config(config) #: Soren::Config
     end
 
     #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)
@@ -75,6 +79,19 @@ module Soren
       raise Soren::Error::ReadError, "read error: #{e.message}"
     ensure
       socket&.close
+    end
+
+    private
+
+    #: (untyped) -> Soren::Config
+    def normalize_config(config)
+      return Soren::Config.new if config.nil?
+
+      unless config.is_a?(Soren::Config)
+        raise Soren::Error::ArgumentError, 'config must be a Soren::Config'
+      end
+
+      config
     end
   end
 

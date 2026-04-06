@@ -4,6 +4,7 @@
 require_relative 'soren/core_ext/blank'
 require_relative 'soren/version'
 require_relative 'soren/error'
+require_relative 'soren/config'
 require_relative 'soren/connection'
 require_relative 'soren/response'
 
