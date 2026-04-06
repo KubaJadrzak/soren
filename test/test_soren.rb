@@ -2,6 +2,7 @@
 
 require 'test_helper'
 require 'uri'
+require 'stringio'
 
 class TestSoren < Minitest::Test
   def test_that_it_has_a_version_number
@@ -30,16 +31,15 @@ class TestSoren < Minitest::Test
     written_payload = nil
     closed = false
     captured_host = nil
-    response_payload = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"ok\":true}"
+    response_payload = StringIO.new("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 11\r\n\r\n{\"ok\":true}")
 
     fake_socket = Object.new
     fake_socket.define_singleton_method(:write) do |payload|
       written_payload = payload
       payload.bytesize
     end
-    fake_socket.define_singleton_method(:read) do
-      response_payload
-    end
+    fake_socket.define_singleton_method(:gets) { response_payload.gets }
+    fake_socket.define_singleton_method(:read) { |length = nil| response_payload.read(length) }
     fake_socket.define_singleton_method(:close) do
       closed = true
     end
@@ -60,7 +60,7 @@ class TestSoren < Minitest::Test
     assert_equal 200, response.status_code.to_i
     assert_equal 'OK', response.status_message.to_s
     assert_equal 'HTTP/1.1', response.version.to_s
-    assert_equal({ 'content-type' => ['application/json'] }, response.headers.to_h)
+    assert_equal({ 'content-type' => ['application/json'], 'content-length' => ['11'] }, response.headers.to_h)
     assert_equal '{"ok":true}', response.body.to_s
     assert_equal true, closed
   end

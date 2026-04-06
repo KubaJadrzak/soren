@@ -51,9 +51,8 @@ module Soren
     def send(request)
       socket = open_socket
       socket.write(request.to_http(host: @host.to_s))
-      raw_response = socket.read
 
-      Soren::Response.new(raw_response)
+      Soren::Response.new(socket)
     ensure
       socket&.close
     end
