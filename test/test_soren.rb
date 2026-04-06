@@ -105,14 +105,6 @@ class TestSoren < Minitest::Test
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
 
     assert_instance_of Soren::Connection, connection
-    assert_instance_of Soren::Config, connection.config
-  end
-
-  def test_new_accepts_explicit_config
-    config = Soren::Config.new(read_timeout: 1, connect_timeout: 2, write_timeout: 3)
-    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https', config: config)
-
-    assert_same config, connection.config
   end
 
   def test_new_accepts_uri_object
@@ -137,14 +129,6 @@ class TestSoren < Minitest::Test
       Soren::Connection.new(host: 'example.com', port: 443)
     end
 
-    assert_equal 'host, port, and scheme are required when uri is not provided', error.message
-  end
-
-  def test_new_rejects_invalid_config
-    error = assert_raises(Soren::Error::ArgumentError) do
-      Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https', config: Object.new)
-    end
-
-    assert_equal 'config must be a Soren::Config', error.message
+    assert_equal 'scheme must be a non-empty String', error.message
   end
 end

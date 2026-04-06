@@ -9,34 +9,17 @@ require_relative 'types/connection/host'
 require_relative 'types/connection/port'
 require_relative 'types/connection/scheme'
 require_relative 'types/connection/uri'
-require_relative 'config'
 require_relative 'response'
 
 module Soren
   class Connection
-    attr_reader :config #: Soren::Config?
-
-    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped, ?config: untyped) -> void
-    def initialize(host: nil, port: nil, scheme: nil, uri: nil, config: nil)
-      if uri
-        unless host.nil? && port.nil? && scheme.nil?
-          raise Soren::Error::ArgumentError,
-                'pass either uri: or host:, port:, and scheme:, not both'
-        end
-
-        parsed_uri = Soren::Types::Connection::Uri.new(uri)
-        host = parsed_uri.host
-        port = parsed_uri.port
-        scheme = parsed_uri.scheme
-      elsif host.nil? || port.nil? || scheme.nil?
-        raise Soren::Error::ArgumentError,
-              'host, port, and scheme are required when uri is not provided'
-      end
+    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped) -> void
+    def initialize(host: nil, port: nil, scheme: nil, uri: nil)
+      host, port, scheme = resolve_connection_parts(host: host, port: port, scheme: scheme, uri: uri)
 
       @host = Soren::Types::Connection::Host.new(host) #: Soren::Types::Connection::Host
       @port = Soren::Types::Connection::Port.new(port) #: Soren::Types::Connection::Port
       @scheme = Soren::Types::Connection::Scheme.new(scheme) #: Soren::Types::Connection::Scheme
-      @config = normalize_config(config) #: Soren::Config
     end
 
     #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)
@@ -83,15 +66,19 @@ module Soren
 
     private
 
-    #: (untyped) -> Soren::Config
-    def normalize_config(config)
-      return Soren::Config.new if config.nil?
+    #: (host: untyped, port: untyped, scheme: untyped, uri: untyped) -> [untyped, untyped, untyped]
+    def resolve_connection_parts(host:, port:, scheme:, uri:)
+      if uri.nil?
+        [host, port, scheme]
+      else
+        unless host.nil? && port.nil? && scheme.nil?
+          raise Soren::Error::ArgumentError,
+                'pass either uri: or host:, port:, and scheme:, not both'
+        end
 
-      unless config.is_a?(Soren::Config)
-        raise Soren::Error::ArgumentError, 'config must be a Soren::Config'
+        parsed_uri = Soren::Types::Connection::Uri.new(uri)
+        [parsed_uri.host, parsed_uri.port, parsed_uri.scheme]
       end
-
-      config
     end
   end
 
