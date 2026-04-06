@@ -20,7 +20,7 @@ module Soren
         #: (untyped) -> String
         def validate(body)
           unless body.is_a?(String)
-            raise Soren::Error::ArgumentError, 'body must be a String'
+            raise Soren::Error::ResponseError, 'body must be a String'
           end
 
           body

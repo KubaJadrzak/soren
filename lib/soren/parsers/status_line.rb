@@ -13,7 +13,7 @@ module Soren
       def parse
         status_line_match = @status_line&.match(%r{\A(HTTP/\d+\.\d+)\s+(\d{3})(?:\s+(.*))?\z})
         unless status_line_match
-          raise Soren::Error::ArgumentError, 'invalid HTTP status line'
+          raise Soren::Error::ParserError, 'invalid HTTP status line'
         end
 
         version = status_line_match[1]
@@ -21,7 +21,7 @@ module Soren
         status_message = status_line_match[3]&.strip
 
         if version.blank? || status_code_text.blank? || status_message.blank?
-          raise Soren::Error::ArgumentError, 'status line must include version, status_code and status_message'
+          raise Soren::Error::ParserError, 'status line must include version, status_code and status_message'
         end
 
         {

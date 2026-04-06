@@ -47,18 +47,23 @@ module Soren
           true
         end
 
+        #: -> Array[String]
+        def content_encodings
+          split_header_values(get_all('content-encoding')).reject { |encoding| encoding.blank? || encoding == 'identity' }
+        end
+
         private
 
         #: (untyped) -> Hash[String, Array[String]]
         def validate(headers)
           unless headers.is_a?(Hash)
-            raise Soren::Error::ArgumentError, 'headers must be a Hash'
+            raise Soren::Error::ResponseError, 'headers must be a Hash'
           end
 
           normalized_headers = {}
           headers.each do |key, value|
             unless key.is_a?(String) && value.is_a?(Array) && value.all? { |item| item.is_a?(String) }
-              raise Soren::Error::ArgumentError, 'headers must be a Hash[String, Array[String]]'
+              raise Soren::Error::ResponseError, 'headers must be a Hash[String, Array[String]]'
             end
 
             normalized_key = key.downcase

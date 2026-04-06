@@ -27,6 +27,8 @@ module Soren
 
       @headers = parsed_response[:headers] #: Soren::Types::Response::Headers?
       @body = Soren::Types::Response::Body.new(parsed_response[:body]) #: Soren::Types::Response::Body?
+    rescue Soren::Error::ParserError, Soren::Error::DecoderError => e
+      raise Soren::Error::ResponseError, e.message
     end
   end
 end

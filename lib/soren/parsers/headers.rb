@@ -18,12 +18,12 @@ module Soren
 
           key, value = line.split(':', 2)
           unless key && value
-            raise Soren::Error::ArgumentError, 'invalid HTTP header line'
+            raise Soren::Error::ParserError, 'invalid HTTP header line'
           end
 
           normalized_key = key.strip.downcase
-          parsed_headers[normalized_key] ||= []
-          parsed_headers[normalized_key] << value.strip
+          values = (parsed_headers[normalized_key] ||= [])
+          values << value.strip
         end
 
         parsed_headers

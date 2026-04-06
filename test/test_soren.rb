@@ -26,6 +26,42 @@ class TestSoren < Minitest::Test
     assert_same fake_socket, socket
   end
 
+  def test_open_socket_wraps_tcp_errors
+    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
+
+    error = TCPSocket.stub(:new, ->(*_) { raise ::SocketError, 'boom' }) do
+      assert_raises(Soren::Error::ConnectionError) { connection.open_socket }
+    end
+
+    assert_match(/connection error: boom/, error.message)
+  end
+
+  def test_open_socket_wraps_ssl_errors
+    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
+    fake_tcp = Object.new
+
+    fake_tcp.define_singleton_method(:close) { true }
+
+    error = TCPSocket.stub(:new, ->(*_) { fake_tcp }) do
+      OpenSSL::SSL::SSLSocket.stub(:new, ->(*_) { raise OpenSSL::SSL::SSLError, 'handshake failed' }) do
+        assert_raises(Soren::Error::ConnectionError) { connection.open_socket }
+      end
+    end
+
+    assert_match(/connection error: handshake failed/, error.message)
+  end
+
+  def test_open_socket_wraps_timeout_errors
+    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
+
+    error = TCPSocket.stub(:new, ->(*_) { raise Errno::ETIMEDOUT, 'timed out' }) do
+      assert_raises(Soren::Error::TimeoutError) { connection.open_socket }
+    end
+
+    assert_match(/connection timeout:/, error.message)
+    assert_match(/timed out/i, error.message)
+  end
+
   def test_send_uses_open_socket_and_request_to_http
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
     written_payload = nil

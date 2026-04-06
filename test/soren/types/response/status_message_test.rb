@@ -12,7 +12,7 @@ module Soren
         end
 
         def test_rejects_empty_status_message
-          error = assert_raises(Soren::Error::ArgumentError) { StatusMessage.new('  ') }
+          error = assert_raises(Soren::Error::ResponseError) { StatusMessage.new('  ') }
 
           assert_equal 'status_message must be a non-empty String', error.message
         end

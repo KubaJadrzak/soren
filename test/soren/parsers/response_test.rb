@@ -20,6 +20,30 @@ module Soren
         assert_equal({ 'content-type' => ['text/plain'], 'content-length' => ['5'] }, parsed[:headers].to_h)
         assert_equal 'hello', parsed[:body]
       end
+
+      def test_wraps_parser_errors_as_response_error
+        error = assert_raises(Soren::Error::ResponseError) do
+          Response.new("INVALID\r\n\r\n").parse
+        end
+
+        assert_equal 'invalid HTTP status line', error.message
+      end
+
+      def test_wraps_decoder_errors_as_response_error
+        raw_response = [
+          'HTTP/1.1 200 OK',
+          'Content-Length: 5',
+          'Content-Encoding: br',
+          '',
+          'hello',
+        ].join("\r\n")
+
+        error = assert_raises(Soren::Error::ResponseError) do
+          Response.new(raw_response).parse
+        end
+
+        assert_equal 'unsupported content-encoding: br', error.message
+      end
     end
   end
 end

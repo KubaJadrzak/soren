@@ -3,6 +3,7 @@
 
 require 'socket'
 require 'openssl'
+require 'timeout'
 
 require_relative 'types/connection/host'
 require_relative 'types/connection/port'
@@ -45,6 +46,12 @@ module Soren
       ssl.hostname = @host.to_s
       ssl.connect
       ssl
+    rescue Timeout::Error, Errno::ETIMEDOUT => e
+      tcp&.close
+      raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
+    rescue OpenSSL::SSL::SSLError, ::SocketError, SystemCallError, IOError => e
+      tcp&.close
+      raise Soren::Error::ConnectionError, "connection error: #{e.message}"
     end
 
     #: (Soren::Request) -> Soren::Response
@@ -53,6 +60,10 @@ module Soren
       socket.write(request.to_http(host: @host.to_s))
 
       Soren::Response.new(socket)
+    rescue Timeout::Error, Errno::ETIMEDOUT => e
+      raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
+    rescue OpenSSL::SSL::SSLError, ::SocketError, SystemCallError, IOError => e
+      raise Soren::Error::ConnectionError, "connection error: #{e.message}"
     ensure
       socket&.close
     end

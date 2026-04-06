@@ -20,7 +20,7 @@ module Soren
         #: (untyped) -> String
         def validate(status_message)
           unless status_message.is_a?(String) && !status_message.blank?
-            raise Soren::Error::ArgumentError, 'status_message must be a non-empty String'
+            raise Soren::Error::ResponseError, 'status_message must be a non-empty String'
           end
 
           status_message
