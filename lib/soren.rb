@@ -1,9 +1,11 @@
 # typed: strict
 # frozen_string_literal: true
 
+require_relative 'soren/core_ext/blank'
 require_relative 'soren/version'
 require_relative 'soren/error'
 require_relative 'soren/connection'
+require_relative 'soren/response'
 
 module Soren
 end

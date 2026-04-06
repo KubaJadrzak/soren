@@ -30,11 +30,15 @@ class TestSoren < Minitest::Test
     written_payload = nil
     closed = false
     captured_host = nil
+    response_payload = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"ok\":true}"
 
     fake_socket = Object.new
     fake_socket.define_singleton_method(:write) do |payload|
       written_payload = payload
       payload.bytesize
+    end
+    fake_socket.define_singleton_method(:read) do
+      response_payload
     end
     fake_socket.define_singleton_method(:close) do
       closed = true
@@ -46,13 +50,18 @@ class TestSoren < Minitest::Test
       "GET / HTTP/1.1\r\nHost: #{host}\r\n\r\n"
     end
 
-    bytes_sent = connection.stub(:open_socket, fake_socket) do
+    response = connection.stub(:open_socket, fake_socket) do
       connection.send(fake_request)
     end
 
     assert_equal 'example.com', captured_host
     assert_equal "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n", written_payload
-    assert_equal written_payload.bytesize, bytes_sent
+    assert_instance_of Soren::Response, response
+    assert_equal 200, response.status_code.to_i
+    assert_equal 'OK', response.status_message.to_s
+    assert_equal 'HTTP/1.1', response.version.to_s
+    assert_equal({ 'content-type' => ['application/json'] }, response.headers.to_h)
+    assert_equal '{"ok":true}', response.body.to_s
     assert_equal true, closed
   end
 

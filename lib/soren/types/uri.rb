@@ -38,7 +38,7 @@ module Soren
         uri_port = uri.port
         uri_scheme = uri.scheme
 
-        if uri_host.nil? || uri_host.strip.empty? || uri_port.nil? || uri_scheme.nil? || uri_scheme.strip.empty?
+        if uri_host.blank? || uri_port.nil? || uri_scheme.blank?
           raise Soren::Error::ArgumentError, 'uri must include a host, port and scheme'
         end
 

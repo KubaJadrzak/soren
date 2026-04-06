@@ -1,25 +1,25 @@
 # typed: strict
 # frozen_string_literal: true
 
-require_relative 'types/target'
-require_relative 'types/method'
-require_relative 'types/headers'
-require_relative 'types/body'
+require_relative 'types/request/target'
+require_relative 'types/request/method'
+require_relative 'types/request/headers'
+require_relative 'types/request/body'
 
 module Soren
   class Request
 
-    attr_reader :method #: Soren::Types::Method?
-    attr_reader :target #: Soren::Types::Target?
-    attr_reader :headers #: Soren::Types::Headers?
-    attr_reader :body #: Soren::Types::Body?
+    attr_reader :method #: Soren::Types::Request::Method?
+    attr_reader :target #: Soren::Types::Request::Target?
+    attr_reader :headers #: Soren::Types::Request::Headers?
+    attr_reader :body #: Soren::Types::Request::Body?
 
     #: (method: untyped, target: untyped, ?headers: untyped, ?body: untyped) -> void
     def initialize(method:, target:, headers: {}, body: nil)
-      @method = Soren::Types::Method.new(method) #: Soren::Types::Method
-      @target = Soren::Types::Target.new(target) #: Soren::Types::Target
-      @headers = Soren::Types::Headers.new(headers) #: Soren::Types::Headers
-      @body = Soren::Types::Body.new(body) #: Soren::Types::Body
+      @method = Soren::Types::Request::Method.new(method) #: Soren::Types::Request::Method
+      @target = Soren::Types::Request::Target.new(target) #: Soren::Types::Request::Target
+      @headers = Soren::Types::Request::Headers.new(headers) #: Soren::Types::Request::Headers
+      @body = Soren::Types::Request::Body.new(body) #: Soren::Types::Request::Body
     end
 
     #: (host: untyped) -> String

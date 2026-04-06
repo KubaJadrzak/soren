@@ -4,10 +4,11 @@
 require 'socket'
 require 'openssl'
 
-require_relative 'types/host'
-require_relative 'types/port'
-require_relative 'types/scheme'
-require_relative 'types/uri'
+require_relative 'types/connection/host'
+require_relative 'types/connection/port'
+require_relative 'types/connection/scheme'
+require_relative 'types/connection/uri'
+require_relative 'response'
 
 module Soren
   class Connection
@@ -19,7 +20,7 @@ module Soren
                 'pass either uri: or host:, port:, and scheme:, not both'
         end
 
-        parsed_uri = Soren::Types::Uri.new(uri)
+        parsed_uri = Soren::Types::Connection::Uri.new(uri)
         host = parsed_uri.host
         port = parsed_uri.port
         scheme = parsed_uri.scheme
@@ -28,9 +29,9 @@ module Soren
               'host, port, and scheme are required when uri is not provided'
       end
 
-      @host = Soren::Types::Host.new(host) #: Soren::Types::Host
-      @port = Soren::Types::Port.new(port) #: Soren::Types::Port
-      @scheme = Soren::Types::Scheme.new(scheme) #: Soren::Types::Scheme
+      @host = Soren::Types::Connection::Host.new(host) #: Soren::Types::Connection::Host
+      @port = Soren::Types::Connection::Port.new(port) #: Soren::Types::Connection::Port
+      @scheme = Soren::Types::Connection::Scheme.new(scheme) #: Soren::Types::Connection::Scheme
     end
 
     #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)
@@ -46,10 +47,13 @@ module Soren
       ssl
     end
 
-    #: (request: untyped) -> Integer
+    #: (Soren::Request) -> Soren::Response
     def send(request)
       socket = open_socket
       socket.write(request.to_http(host: @host.to_s))
+      raw_response = socket.read
+
+      Soren::Response.new(raw_response)
     ensure
       socket&.close
     end

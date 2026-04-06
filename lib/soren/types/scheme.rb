@@ -23,7 +23,7 @@ module Soren
 
       #: (untyped) -> String
       def validate(scheme)
-        unless scheme.is_a?(String) && !scheme.strip.empty?
+        unless scheme.is_a?(String) && !scheme.blank?
           raise Soren::Error::ArgumentError, 'scheme must be a non-empty String'
         end
 
