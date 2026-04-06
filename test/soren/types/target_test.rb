@@ -16,6 +16,12 @@ module Soren
         assert_equal '/users?page=1&per_page=50', target.to_s
       end
 
+      def test_to_http_returns_target
+        target = Target.new('/users?page=1&per_page=50')
+
+        assert_equal '/users?page=1&per_page=50', target.to_http
+      end
+
       def test_accepts_root
         target = Target.new('/')
 

@@ -14,6 +14,11 @@ module Soren
         @scheme
       end
 
+      #: -> bool
+      def https?
+        @scheme == 'https'
+      end
+
       private
 
       #: (untyped) -> String

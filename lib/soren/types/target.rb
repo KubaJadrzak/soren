@@ -14,6 +14,11 @@ module Soren
         @target
       end
 
+      #: -> String
+      def to_http
+        @target
+      end
+
       private
 
       #: (untyped) -> String

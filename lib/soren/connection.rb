@@ -1,6 +1,9 @@
 # typed: strict
 # frozen_string_literal: true
 
+require 'socket'
+require 'openssl'
+
 require_relative 'types/host'
 require_relative 'types/port'
 require_relative 'types/scheme'
@@ -28,6 +31,27 @@ module Soren
       @host = Soren::Types::Host.new(host) #: Soren::Types::Host
       @port = Soren::Types::Port.new(port) #: Soren::Types::Port
       @scheme = Soren::Types::Scheme.new(scheme) #: Soren::Types::Scheme
+    end
+
+    #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)
+    def open_socket
+      tcp = TCPSocket.new(@host.to_s, @port.to_i)
+
+      return tcp unless @scheme.https?
+
+      ctx = OpenSSL::SSL::SSLContext.new
+      ssl = OpenSSL::SSL::SSLSocket.new(tcp, ctx)
+      ssl.hostname = @host.to_s
+      ssl.connect
+      ssl
+    end
+
+    #: (request: untyped) -> Integer
+    def send(request)
+      socket = open_socket
+      socket.write(request.to_http(host: @host.to_s))
+    ensure
+      socket&.close
     end
   end
 

@@ -16,6 +16,18 @@ module Soren
         assert_equal '', body.to_s
       end
 
+      def test_to_http_returns_body_string
+        body = Body.new('{"name":"Alice"}')
+
+        assert_equal '{"name":"Alice"}', body.to_http
+      end
+
+      def test_to_http_returns_nil_for_nil_body
+        body = Body.new(nil)
+
+        assert_nil body.to_http
+      end
+
       def test_accepts_nil
         body = Body.new(nil)
 

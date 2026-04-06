@@ -8,6 +8,54 @@ class TestSoren < Minitest::Test
     refute_nil ::Soren::VERSION
   end
 
+  def test_open_socket_uses_host_and_port
+    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
+    fake_socket = Object.new
+
+    tcp_socket_stub = ->(host, port) do
+      assert_equal 'example.com', host
+      assert_equal 443, port
+      fake_socket
+    end
+
+    socket = TCPSocket.stub(:new, tcp_socket_stub) do
+      connection.open_socket
+    end
+
+    assert_same fake_socket, socket
+  end
+
+  def test_send_uses_open_socket_and_request_to_http
+    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
+    written_payload = nil
+    closed = false
+    captured_host = nil
+
+    fake_socket = Object.new
+    fake_socket.define_singleton_method(:write) do |payload|
+      written_payload = payload
+      payload.bytesize
+    end
+    fake_socket.define_singleton_method(:close) do
+      closed = true
+    end
+
+    fake_request = Object.new
+    fake_request.define_singleton_method(:to_http) do |host:|
+      captured_host = host
+      "GET / HTTP/1.1\r\nHost: #{host}\r\n\r\n"
+    end
+
+    bytes_sent = connection.stub(:open_socket, fake_socket) do
+      connection.send(fake_request)
+    end
+
+    assert_equal 'example.com', captured_host
+    assert_equal "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n", written_payload
+    assert_equal written_payload.bytesize, bytes_sent
+    assert_equal true, closed
+  end
+
   def test_new_accepts_explicit_host_port_and_scheme
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
 

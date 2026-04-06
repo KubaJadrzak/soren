@@ -14,6 +14,20 @@ module Soren
         @headers
       end
 
+      #: (host: untyped) -> Array[String]
+      def to_http(host:)
+        unless host.is_a?(String) && !host.strip.empty?
+          raise Soren::Error::ArgumentError, 'host must be a non-empty String'
+        end
+
+        request_headers = @headers.dup
+        unless request_headers.keys.any? { |key| key.to_s.casecmp('host').zero? }
+          request_headers['Host'] = host
+        end
+
+        request_headers.map { |key, value| "#{key}: #{value}" }
+      end
+
       private
 
       #: (untyped) -> Hash[untyped, untyped]
