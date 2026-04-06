@@ -57,13 +57,13 @@ module Soren
         #: (untyped) -> Hash[String, Array[String]]
         def validate(headers)
           unless headers.is_a?(Hash)
-            raise Soren::Error::ResponseError, 'headers must be a Hash'
+            raise Soren::Error::ParseError, 'headers must be a Hash'
           end
 
           normalized_headers = {}
           headers.each do |key, value|
             unless key.is_a?(String) && value.is_a?(Array) && value.all? { |item| item.is_a?(String) }
-              raise Soren::Error::ResponseError, 'headers must be a Hash[String, Array[String]]'
+              raise Soren::Error::ParseError, 'headers must be a Hash[String, Array[String]]'
             end
 
             normalized_key = key.downcase

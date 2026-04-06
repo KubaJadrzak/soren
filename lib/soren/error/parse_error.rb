@@ -3,6 +3,6 @@
 
 module Soren
   module Error
-    class ParserError < Base; end
+    class ParseError < Base; end
   end
 end

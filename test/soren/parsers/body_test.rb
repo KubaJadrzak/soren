@@ -38,7 +38,7 @@ module Soren
         socket = StringIO.new('hello')
         headers = Soren::Types::Response::Headers.new({})
 
-        error = assert_raises(Soren::Error::ParserError) do
+        error = assert_raises(Soren::Error::ProtocolError) do
           Body.new(socket: socket, headers: headers, status_code: 200).parse
         end
 
@@ -113,7 +113,7 @@ module Soren
                                                         'content-encoding' => ['br'],
                                                       })
 
-        error = assert_raises(Soren::Error::DecoderError) do
+        error = assert_raises(Soren::Error::ProtocolError) do
           Body.new(socket: socket, headers: headers, status_code: 200).parse
         end
 
@@ -127,7 +127,7 @@ module Soren
                                                         'content-encoding' => ['gzip'],
                                                       })
 
-        error = assert_raises(Soren::Error::DecoderError) do
+        error = assert_raises(Soren::Error::ParseError) do
           Body.new(socket: socket, headers: headers, status_code: 200).parse
         end
 

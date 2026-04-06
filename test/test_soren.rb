@@ -30,10 +30,10 @@ class TestSoren < Minitest::Test
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
 
     error = TCPSocket.stub(:new, ->(*_) { raise ::SocketError, 'boom' }) do
-      assert_raises(Soren::Error::ConnectionError) { connection.open_socket }
+      assert_raises(Soren::Error::DNSFailure) { connection.open_socket }
     end
 
-    assert_match(/connection error: boom/, error.message)
+    assert_match(/DNS lookup failed: boom/, error.message)
   end
 
   def test_open_socket_wraps_ssl_errors
@@ -44,11 +44,11 @@ class TestSoren < Minitest::Test
 
     error = TCPSocket.stub(:new, ->(*_) { fake_tcp }) do
       OpenSSL::SSL::SSLSocket.stub(:new, ->(*_) { raise OpenSSL::SSL::SSLError, 'handshake failed' }) do
-        assert_raises(Soren::Error::ConnectionError) { connection.open_socket }
+        assert_raises(Soren::Error::SSLError) { connection.open_socket }
       end
     end
 
-    assert_match(/connection error: handshake failed/, error.message)
+    assert_match(/SSL error: handshake failed/, error.message)
   end
 
   def test_open_socket_wraps_timeout_errors

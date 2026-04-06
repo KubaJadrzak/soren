@@ -3,6 +3,6 @@
 
 module Soren
   module Error
-    class ResponseError < Base; end
+    class ProtocolError < Base; end
   end
 end

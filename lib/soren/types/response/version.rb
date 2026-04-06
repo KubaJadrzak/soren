@@ -20,7 +20,7 @@ module Soren
         #: (untyped) -> String
         def validate(version)
           unless version.is_a?(String) && version.match?(%r{\AHTTP/\d+\.\d+\z})
-            raise Soren::Error::ResponseError, 'version must match HTTP/<major>.<minor>'
+            raise Soren::Error::ParseError, 'version must match HTTP/<major>.<minor>'
           end
 
           version

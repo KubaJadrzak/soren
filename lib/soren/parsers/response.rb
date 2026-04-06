@@ -22,7 +22,7 @@ module Soren
 
         status_line = io.gets
         if status_line.nil? || status_line.blank?
-          raise Soren::Error::ParserError, 'raw_response must be a non-empty String'
+          raise Soren::Error::ParseError, 'raw_response must be a non-empty String'
         end
 
         header_lines = read_header_lines(io)
@@ -41,8 +41,6 @@ module Soren
           headers:     headers_object,
           body:        parsed_body,
         }
-      rescue Soren::Error::ParserError, Soren::Error::DecoderError => e
-        raise Soren::Error::ResponseError, e.message
       end
 
       private
@@ -55,7 +53,7 @@ module Soren
           return StringIO.new(source)
         end
 
-        raise Soren::Error::ParserError, 'raw_response must be a non-empty String'
+        raise Soren::Error::ParseError, 'raw_response must be a non-empty String'
       end
 
       #: (untyped) -> Array[String]

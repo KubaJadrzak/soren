@@ -49,7 +49,16 @@ module Soren
     rescue Timeout::Error, Errno::ETIMEDOUT => e
       tcp&.close
       raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
-    rescue OpenSSL::SSL::SSLError, ::SocketError, SystemCallError, IOError => e
+    rescue OpenSSL::SSL::SSLError => e
+      tcp&.close
+      raise Soren::Error::SSLError, "SSL error: #{e.message}"
+    rescue ::SocketError => e
+      tcp&.close
+      raise Soren::Error::DNSFailure, "DNS lookup failed: #{e.message}"
+    rescue Errno::ECONNREFUSED => e
+      tcp&.close
+      raise Soren::Error::ConnectionRefused, "connection refused: #{e.message}"
+    rescue SystemCallError, IOError => e
       tcp&.close
       raise Soren::Error::ConnectionError, "connection error: #{e.message}"
     end
@@ -62,8 +71,8 @@ module Soren
       Soren::Response.new(socket)
     rescue Timeout::Error, Errno::ETIMEDOUT => e
       raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
-    rescue OpenSSL::SSL::SSLError, ::SocketError, SystemCallError, IOError => e
-      raise Soren::Error::ConnectionError, "connection error: #{e.message}"
+    rescue SystemCallError, IOError => e
+      raise Soren::Error::ReadError, "read error: #{e.message}"
     ensure
       socket&.close
     end

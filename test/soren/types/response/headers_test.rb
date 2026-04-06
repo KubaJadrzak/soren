@@ -66,13 +66,13 @@ module Soren
         end
 
         def test_rejects_non_array_values
-          error = assert_raises(Soren::Error::ResponseError) { Headers.new({ 'content-length' => '10' }) }
+          error = assert_raises(Soren::Error::ParseError) { Headers.new({ 'content-length' => '10' }) }
 
           assert_equal 'headers must be a Hash[String, Array[String]]', error.message
         end
 
         def test_rejects_array_with_non_string_entries
-          error = assert_raises(Soren::Error::ResponseError) { Headers.new({ 'content-length' => [10] }) }
+          error = assert_raises(Soren::Error::ParseError) { Headers.new({ 'content-length' => [10] }) }
 
           assert_equal 'headers must be a Hash[String, Array[String]]', error.message
         end

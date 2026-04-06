@@ -12,7 +12,7 @@ module Soren
         end
 
         def test_rejects_non_string_body
-          error = assert_raises(Soren::Error::ResponseError) { Body.new(nil) }
+          error = assert_raises(Soren::Error::ParseError) { Body.new(nil) }
 
           assert_equal 'body must be a String', error.message
         end

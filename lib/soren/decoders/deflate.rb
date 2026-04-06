@@ -25,7 +25,7 @@ module Soren
         inflater = Zlib::Inflate.new(-Zlib::MAX_WBITS)
         inflater.inflate(@body)
       rescue Zlib::Error
-        raise Soren::Error::DecoderError, 'invalid deflate encoded body'
+        raise Soren::Error::ParseError, 'invalid deflate encoded body'
       ensure
         inflater&.close
       end

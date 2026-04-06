@@ -17,7 +17,7 @@ module Soren
       end
 
       def test_rejects_invalid_header_line
-        error = assert_raises(Soren::Error::ParserError) { Headers.new(['InvalidHeader']).parse }
+        error = assert_raises(Soren::Error::ParseError) { Headers.new(['InvalidHeader']).parse }
 
         assert_equal 'invalid HTTP header line', error.message
       end

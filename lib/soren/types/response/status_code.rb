@@ -20,7 +20,7 @@ module Soren
         #: (untyped) -> Integer
         def validate(status_code)
           unless status_code.is_a?(Integer) && status_code.between?(100, 599)
-            raise Soren::Error::ResponseError, 'status_code must be an Integer between 100 and 599'
+            raise Soren::Error::ParseError, 'status_code must be an Integer between 100 and 599'
           end
 
           status_code

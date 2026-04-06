@@ -12,7 +12,7 @@ module Soren
         end
 
         def test_rejects_invalid_http_version
-          error = assert_raises(Soren::Error::ResponseError) { Version.new('1.1') }
+          error = assert_raises(Soren::Error::ParseError) { Version.new('1.1') }
 
           assert_equal 'version must match HTTP/<major>.<minor>', error.message
         end

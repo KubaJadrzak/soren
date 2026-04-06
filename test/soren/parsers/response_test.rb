@@ -21,15 +21,15 @@ module Soren
         assert_equal 'hello', parsed[:body]
       end
 
-      def test_wraps_parser_errors_as_response_error
-        error = assert_raises(Soren::Error::ResponseError) do
+      def test_raises_parse_error_for_invalid_status_line
+        error = assert_raises(Soren::Error::ParseError) do
           Response.new("INVALID\r\n\r\n").parse
         end
 
         assert_equal 'invalid HTTP status line', error.message
       end
 
-      def test_wraps_decoder_errors_as_response_error
+      def test_raises_protocol_error_for_unsupported_encoding
         raw_response = [
           'HTTP/1.1 200 OK',
           'Content-Length: 5',
@@ -38,7 +38,7 @@ module Soren
           'hello',
         ].join("\r\n")
 
-        error = assert_raises(Soren::Error::ResponseError) do
+        error = assert_raises(Soren::Error::ProtocolError) do
           Response.new(raw_response).parse
         end
 

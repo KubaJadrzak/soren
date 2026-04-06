@@ -28,7 +28,7 @@ module Soren
                      if !content_length.nil?
                        read_exactly(content_length)
                      elsif @headers.keep_alive?
-                       raise Soren::Error::ParserError, 'cannot determine body length with keep-alive'
+                       raise Soren::Error::ProtocolError, 'cannot determine body length with keep-alive'
                      else
                        @socket.read.to_s
                      end
@@ -55,7 +55,7 @@ module Soren
                          when 'deflate'
                            Soren::Decoders::Deflate.new(decoded_body).decode
                          else
-                           raise Soren::Error::DecoderError, "unsupported content-encoding: #{encoding}"
+                           raise Soren::Error::ProtocolError, "unsupported content-encoding: #{encoding}"
                          end
         end
 
@@ -97,7 +97,7 @@ module Soren
         buffer = +''
         while buffer.bytesize < length
           chunk = @socket.read(length - buffer.bytesize)
-          raise Soren::Error::ParserError, 'unexpected EOF while reading body' if chunk.nil?
+          raise Soren::Error::ReadError, 'unexpected EOF while reading body' if chunk.nil?
 
           buffer << chunk
         end

@@ -8,8 +8,11 @@ module Soren
 end
 
 require_relative 'error/argument_error'
-require_relative 'error/response_error'
-require_relative 'error/parser_error'
-require_relative 'error/decoder_error'
 require_relative 'error/connection_error'
 require_relative 'error/timeout_error'
+require_relative 'error/dns_failure'
+require_relative 'error/connection_refused'
+require_relative 'error/ssl_error'
+require_relative 'error/read_error'
+require_relative 'error/parse_error'
+require_relative 'error/protocol_error'

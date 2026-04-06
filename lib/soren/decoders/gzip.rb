@@ -16,7 +16,7 @@ module Soren
       def decode
         Zlib::GzipReader.new(StringIO.new(@body)).read
       rescue Zlib::Error
-        raise Soren::Error::DecoderError, 'invalid gzip encoded body'
+        raise Soren::Error::ParseError, 'invalid gzip encoded body'
       end
     end
   end

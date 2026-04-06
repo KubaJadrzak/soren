@@ -11,7 +11,7 @@ module Soren
       end
 
       def test_rejects_invalid_status_line
-        error = assert_raises(Soren::Error::ParserError) { StatusLine.new('INVALID').parse }
+        error = assert_raises(Soren::Error::ParseError) { StatusLine.new('INVALID').parse }
 
         assert_equal 'invalid HTTP status line', error.message
       end

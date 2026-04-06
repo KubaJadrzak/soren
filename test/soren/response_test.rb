@@ -37,7 +37,7 @@ module Soren
     end
 
     def test_rejects_invalid_status_line
-      error = assert_raises(Soren::Error::ResponseError) do
+      error = assert_raises(Soren::Error::ParseError) do
         Response.new("INVALID\r\n\r\n")
       end
 
@@ -45,7 +45,7 @@ module Soren
     end
 
     def test_rejects_invalid_header_line
-      error = assert_raises(Soren::Error::ResponseError) do
+      error = assert_raises(Soren::Error::ParseError) do
         Response.new("HTTP/1.1 200 OK\r\nInvalidHeader\r\n\r\n")
       end
 
@@ -53,7 +53,7 @@ module Soren
     end
 
     def test_rejects_status_line_with_missing_status_message
-      error = assert_raises(Soren::Error::ResponseError) do
+      error = assert_raises(Soren::Error::ParseError) do
         Response.new("HTTP/1.1 200    \r\n\r\n")
       end
 

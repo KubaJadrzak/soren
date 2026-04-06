@@ -3,6 +3,6 @@
 
 module Soren
   module Error
-    class DecoderError < Base; end
+    class SSLError < Base; end
   end
 end
