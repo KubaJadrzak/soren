@@ -1,33 +1,21 @@
 # typed: strict
 # frozen_string_literal: true
 
-require_relative 'types/host'
-require_relative 'types/port'
-require_relative 'types/scheme'
-require_relative 'types/uri'
+require_relative 'types/target'
+require_relative 'types/headers'
+require_relative 'types/body'
 
 module Soren
   class Request
-    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped) -> void
-    def initialize(host: nil, port: nil, scheme: nil, uri: nil)
-      if uri
-        unless host.nil? && port.nil? && scheme.nil?
-          raise Soren::Error::ArgumentError,
-                'pass either uri: or host:, port:, and scheme:, not both'
-        end
-
-        parsed_uri = Soren::Types::Uri.new(uri)
-        host = parsed_uri.host
-        port = parsed_uri.port
-        scheme = parsed_uri.scheme
-      elsif host.nil? || port.nil? || scheme.nil?
-        raise Soren::Error::ArgumentError,
-              'host, port, and scheme are required when uri is not provided'
-      end
-
-      @host = Soren::Types::Host.new(host) #: Soren::Types::Host
-      @port = Soren::Types::Port.new(port) #: Soren::Types::Port
-      @scheme = Soren::Types::Scheme.new(scheme) #: Soren::Types::Scheme
+    #: (target: untyped, ?headers: untyped, ?body: untyped) -> void
+    def initialize(target:, headers: {}, body: nil)
+      @target = Soren::Types::Target.new(target) #: Soren::Types::Target
+      @headers = Soren::Types::Headers.new(headers) #: Soren::Types::Headers
+      @body = Soren::Types::Body.new(body) #: Soren::Types::Body
     end
+
+    attr_reader :target #: Soren::Types::Target?
+    attr_reader :headers #: Soren::Types::Headers?
+    attr_reader :body #: Soren::Types::Body?
   end
 end

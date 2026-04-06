@@ -30,7 +30,15 @@ module Soren
       def test_rejects_uri_without_host
         error = assert_raises(Soren::Error::ArgumentError) { Uri.new(URI('https:///path-only')) }
 
-        assert_equal 'uri must include a host', error.message
+        assert_equal 'uri must include a host, port and scheme', error.message
+      end
+
+      def test_rejects_uri_with_empty_host
+        uri = URI('https://example.com')
+        uri.host = ''
+        error = assert_raises(Soren::Error::ArgumentError) { Uri.new(uri) }
+
+        assert_equal 'uri must include a host, port and scheme', error.message
       end
     end
   end

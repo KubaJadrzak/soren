@@ -11,28 +11,19 @@ module Soren
         @uri = validate(uri) #: URI::HTTP
       end
 
-      #: -> String
+      #: -> String?
       def host
-        host = @uri.host
-        raise Soren::Error::ArgumentError, 'uri must include a host' if host.nil?
-
-        host
+        @uri.host
       end
 
-      #: -> Integer
+      #: -> Integer?
       def port
-        port = @uri.port
-        raise Soren::Error::ArgumentError, 'uri must include a port' if port.nil?
-
-        port
+        @uri.port
       end
 
-      #: -> String
+      #: -> String?
       def scheme
-        scheme = @uri.scheme
-        raise Soren::Error::ArgumentError, 'uri must include a scheme' if scheme.nil?
-
-        scheme
+        @uri.scheme
       end
 
       private
@@ -41,6 +32,14 @@ module Soren
       def validate(uri)
         unless uri.is_a?(URI::HTTP)
           raise Soren::Error::ArgumentError, 'uri must be a URI::HTTP or URI::HTTPS object'
+        end
+
+        uri_host = uri.host
+        uri_port = uri.port
+        uri_scheme = uri.scheme
+
+        if uri_host.nil? || uri_host.strip.empty? || uri_port.nil? || uri_scheme.nil? || uri_scheme.strip.empty?
+          raise Soren::Error::ArgumentError, 'uri must include a host, port and scheme'
         end
 
         uri
