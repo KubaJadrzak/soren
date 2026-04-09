@@ -3,6 +3,7 @@
 
 require_relative '../decoders/gzip'
 require_relative '../decoders/deflate'
+require_relative '../socket/reader'
 
 module Soren
   module Parsers
@@ -10,9 +11,9 @@ module Soren
       NO_CONTENT_STATUS_CODE = 204
       NOT_MODIFIED_STATUS_CODE = 304
 
-      #: (socket: untyped, headers: Soren::Types::Response::Headers, status_code: Integer) -> void
-      def initialize(socket:, headers:, status_code:)
-        @socket = socket #: untyped
+      #: (reader: Soren::Socket::Reader, headers: Soren::Types::Response::Headers, status_code: Integer) -> void
+      def initialize(reader:, headers:, status_code:)
+        @reader = reader #: Soren::Socket::Reader
         @headers = headers #: Soren::Types::Response::Headers
         @status_code = status_code #: Integer
       end
@@ -26,11 +27,11 @@ module Soren
                    else
                      content_length = @headers.content_length
                      if !content_length.nil?
-                       read_exactly(content_length)
+                       @reader.read_exactly(content_length)
                      elsif @headers.keep_alive?
                        raise Soren::Error::ProtocolError, 'cannot determine body length with keep-alive'
                      else
-                       @socket.read.to_s
+                       @reader.read_all
                      end
                    end
 
@@ -67,14 +68,17 @@ module Soren
         body = +''
 
         loop do
-          chunk_size_line = @socket.gets("\r\n")
+          chunk_size_line = @reader.read_line_with_terminator("\r\n")
           break if chunk_size_line.nil?
 
-          chunk_size = chunk_size_line.strip.split(';', 2).first.to_i(16)
+          chunk_size_str = chunk_size_line.strip.split(';', 2).first
+          break if chunk_size_str.nil?
+
+          chunk_size = chunk_size_str.to_i(16)
           break if chunk_size.zero?
 
-          body << read_exactly(chunk_size)
-          read_exactly(2)
+          body << @reader.read_exactly(chunk_size)
+          @reader.read_exactly(2)
         end
 
         consume_chunked_trailers
@@ -85,24 +89,9 @@ module Soren
       #: -> void
       def consume_chunked_trailers
         loop do
-          line = @socket.gets("\r\n")
+          line = @reader.read_line_with_terminator("\r\n")
           break if line.blank?
         end
-      end
-
-      #: (Integer) -> String
-      def read_exactly(length)
-        return '' if length <= 0
-
-        buffer = +''
-        while buffer.bytesize < length
-          chunk = @socket.read(length - buffer.bytesize)
-          raise Soren::Error::ReadError, 'unexpected EOF while reading body' if chunk.nil?
-
-          buffer << chunk
-        end
-
-        buffer
       end
     end
   end

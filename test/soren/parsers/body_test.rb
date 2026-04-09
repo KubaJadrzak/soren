@@ -3,6 +3,7 @@
 require_relative '../../test_helper'
 require_relative '../../../lib/soren/parsers/body'
 require_relative '../../../lib/soren/types/response/headers'
+require_relative '../../../lib/soren/socket/reader'
 require 'stringio'
 require 'zlib'
 
@@ -13,7 +14,7 @@ module Soren
         socket = StringIO.new('helloTRAILING')
         headers = Soren::Types::Response::Headers.new({ 'content-length' => ['5'] })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 200).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
 
         assert_equal 'hello', body
       end
@@ -22,7 +23,7 @@ module Soren
         socket = StringIO.new("5\r\nhello\r\n6\r\n world\r\n0\r\n\r\n")
         headers = Soren::Types::Response::Headers.new({ 'transfer-encoding' => ['chunked'] })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 200).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
 
         assert_equal 'hello world', body
       end
@@ -31,7 +32,7 @@ module Soren
         socket = StringIO.new('hello until close')
         headers = Soren::Types::Response::Headers.new({ 'connection' => ['close'] })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 200).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
 
         assert_equal 'hello until close', body
       end
@@ -41,7 +42,7 @@ module Soren
         headers = Soren::Types::Response::Headers.new({})
 
         error = assert_raises(Soren::Error::ProtocolError) do
-          Body.new(socket: socket, headers: headers, status_code: 200).parse
+          Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
         end
 
         assert_equal 'cannot determine body length with keep-alive', error.message
@@ -51,7 +52,7 @@ module Soren
         socket = StringIO.new('should be ignored')
         headers = Soren::Types::Response::Headers.new({ 'content-length' => ['17'] })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 204).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 204).parse
 
         assert_equal '', body
       end
@@ -60,7 +61,7 @@ module Soren
         socket = StringIO.new('should be ignored')
         headers = Soren::Types::Response::Headers.new({ 'content-length' => ['17'] })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 304).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 304).parse
 
         assert_equal '', body
       end
@@ -74,7 +75,7 @@ module Soren
                                                         'content-encoding' => ['gzip'],
                                                       })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 200).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
 
         assert_equal plain_body, body
       end
@@ -88,7 +89,7 @@ module Soren
                                                         'content-encoding' => ['deflate'],
                                                       })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 200).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
 
         assert_equal plain_body, body
       end
@@ -103,7 +104,7 @@ module Soren
                                                         'content-encoding' => ['deflate, gzip'],
                                                       })
 
-        body = Body.new(socket: socket, headers: headers, status_code: 200).parse
+        body = Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
 
         assert_equal plain_body, body
       end
@@ -116,7 +117,7 @@ module Soren
                                                       })
 
         error = assert_raises(Soren::Error::ProtocolError) do
-          Body.new(socket: socket, headers: headers, status_code: 200).parse
+          Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
         end
 
         assert_equal 'unsupported content-encoding: br', error.message
@@ -130,7 +131,7 @@ module Soren
                                                       })
 
         error = assert_raises(Soren::Error::ParseError) do
-          Body.new(socket: socket, headers: headers, status_code: 200).parse
+          Body.new(reader: Soren::Socket::Reader.new(socket), headers: headers, status_code: 200).parse
         end
 
         assert_equal 'invalid gzip encoded body', error.message

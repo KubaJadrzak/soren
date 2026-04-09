@@ -12,7 +12,7 @@ require_relative 'types/connection/uri'
 require_relative 'options'
 require_relative 'deadline'
 require_relative 'response'
-require_relative 'socket_io'
+require_relative 'socket/io'
 
 module Soren
   class Connection
@@ -59,7 +59,7 @@ module Soren
     #: (Soren::Request) -> Soren::Response
     def send(request)
       socket = open_socket
-      io = Soren::SocketIO.new(socket, request, @options, host: @host)
+      io = Soren::Socket::IO.new(socket, request, @options, host: @host)
       io.write_request
       io.read_response
     rescue Timeout::Error, Errno::ETIMEDOUT => e
