@@ -10,7 +10,9 @@ require_relative 'types/connection/port'
 require_relative 'types/connection/scheme'
 require_relative 'types/connection/uri'
 require_relative 'options'
+require_relative 'deadline'
 require_relative 'response'
+require_relative 'socket_io'
 
 module Soren
   class Connection
@@ -28,7 +30,7 @@ module Soren
 
     #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)
     def open_socket
-      tcp = TCPSocket.new(@host.to_s, @port.to_i)
+      tcp = TCPSocket.new(@host.to_s, @port.to_i, connection_timeout: @options.connect_timeout)
 
       return tcp unless @scheme.https?
 
@@ -57,9 +59,9 @@ module Soren
     #: (Soren::Request) -> Soren::Response
     def send(request)
       socket = open_socket
-      socket.write(request.to_http(host: @host.to_s))
-
-      Soren::Response.new(socket)
+      io = Soren::SocketIO.new(socket, request, @options, host: @host)
+      io.write_request
+      io.read_response
     rescue Timeout::Error, Errno::ETIMEDOUT => e
       raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
     rescue SystemCallError, IOError => e

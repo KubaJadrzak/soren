@@ -13,9 +13,10 @@ class TestSoren < Minitest::Test
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
     fake_socket = Object.new
 
-    tcp_socket_stub = ->(host, port) do
+    tcp_socket_stub = ->(host, port, connection_timeout:) do
       assert_equal 'example.com', host
       assert_equal 443, port
+      assert_equal Soren::Defaults::Options::CONNECT_TIMEOUT, connection_timeout
       fake_socket
     end
 
@@ -70,7 +71,7 @@ class TestSoren < Minitest::Test
     response_payload = StringIO.new("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 11\r\n\r\n{\"ok\":true}")
 
     fake_socket = Object.new
-    fake_socket.define_singleton_method(:write) do |payload|
+    fake_socket.define_singleton_method(:write_nonblock) do |payload|
       written_payload = payload
       payload.bytesize
     end
@@ -99,6 +100,36 @@ class TestSoren < Minitest::Test
     assert_equal({ 'content-type' => ['application/json'], 'content-length' => ['11'] }, response.headers.to_h)
     assert_equal '{"ok":true}', response.body.to_s
     assert_equal true, closed
+  end
+
+  def test_send_raises_write_timeout_when_socket_not_writable
+    connection = Soren::Connection.new(
+      host:    'example.com',
+      port:    443,
+      scheme:  'https',
+      options: { write_timeout: 0.0 },
+    )
+    closed = false
+
+    fake_socket = Object.new
+    fake_socket.define_singleton_method(:write_nonblock) do |_payload|
+      raise IO::WaitWritable
+    end
+    fake_socket.define_singleton_method(:close) do
+      closed = true
+    end
+
+    fake_request = Object.new
+    fake_request.define_singleton_method(:to_http) do |host:|
+      "GET / HTTP/1.1\r\nHost: #{host}\r\n\r\n"
+    end
+
+    error = connection.stub(:open_socket, fake_socket) do
+      assert_raises(Soren::Error::WriteTimeout) { connection.send(fake_request) }
+    end
+
+    assert_equal true, closed
+    assert_instance_of Soren::Error::WriteTimeout, error
   end
 
   def test_new_accepts_explicit_host_port_and_scheme

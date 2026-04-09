@@ -8,10 +8,6 @@ module Soren
   class Options
     AVAILABLE_OPTIONS = %i[read_timeout connect_timeout write_timeout].freeze
 
-    attr_reader :read_timeout #: Soren::Types::Options::Timeout::ReadTimeout?
-    attr_reader :connect_timeout #: Soren::Types::Options::Timeout::ConnectTimeout?
-    attr_reader :write_timeout #: Soren::Types::Options::Timeout::WriteTimeout?
-
     # rubocop:disable Style/OptionHash
     #: (?untyped) -> void
     def initialize(options = {})
@@ -22,6 +18,21 @@ module Soren
       @write_timeout = Soren::Types::Options::Timeout::WriteTimeout.new(normalized_options[:write_timeout]) #: Soren::Types::Options::Timeout::WriteTimeout
     end
     # rubocop:enable Style/OptionHash
+
+    #: -> Float
+    def read_timeout
+      @read_timeout.to_f
+    end
+
+    #: -> Float
+    def connect_timeout
+      @connect_timeout.to_f
+    end
+
+    #: -> Float
+    def write_timeout
+      @write_timeout.to_f
+    end
 
     private
 

@@ -8,10 +8,6 @@ module Soren
     def test_defaults_to_reasonable_timeouts
       options = Options.new
 
-      assert_instance_of Soren::Types::Options::Timeout::ReadTimeout, options.read_timeout
-      assert_instance_of Soren::Types::Options::Timeout::ConnectTimeout, options.connect_timeout
-      assert_instance_of Soren::Types::Options::Timeout::WriteTimeout, options.write_timeout
-
       assert_equal Soren::Defaults::Options::READ_TIMEOUT, options.read_timeout.to_f
       assert_equal Soren::Defaults::Options::CONNECT_TIMEOUT, options.connect_timeout.to_f
       assert_equal Soren::Defaults::Options::WRITE_TIMEOUT, options.write_timeout.to_f
@@ -19,10 +15,6 @@ module Soren
 
     def test_initializes_timeouts_from_symbol_keys
       options = Options.new({ read_timeout: '1.5', connect_timeout: 2.0, write_timeout: 3 })
-
-      assert_instance_of Soren::Types::Options::Timeout::ReadTimeout, options.read_timeout
-      assert_instance_of Soren::Types::Options::Timeout::ConnectTimeout, options.connect_timeout
-      assert_instance_of Soren::Types::Options::Timeout::WriteTimeout, options.write_timeout
 
       assert_equal 1.5, options.read_timeout.to_f
       assert_equal 2.0, options.connect_timeout.to_f
