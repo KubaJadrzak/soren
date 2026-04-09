@@ -1,9 +1,11 @@
 # typed: strict
 # frozen_string_literal: true
 
+require_relative '../../../defaults/options'
+
 module Soren
   module Types
-    module Config
+    module Options
       module Timeout
         class Base
           #: (untyped, ?default: Integer?) -> void
@@ -35,6 +37,11 @@ module Soren
 
             if timeout.negative?
               raise Soren::Error::ArgumentError, 'timeout must be greater than or equal to 0'
+            end
+
+            if timeout < Soren::Defaults::Options::MIN_TIMEOUT
+              raise Soren::Error::ArgumentError,
+                    "timeout must be at least #{Soren::Defaults::Options::MIN_TIMEOUT} milliseconds"
             end
 
             timeout

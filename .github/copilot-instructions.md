@@ -49,6 +49,7 @@ Conventions:
 
 - Add a signature comment before public and private methods when touching typed files.
 - Use existing local style (`untyped`, `String`, `Integer`, `bool`, `Type?`, `Hash[...]`, `Array[...]`).
+- Do not use `untyped` as a default fix for Sorbet errors; prefer specific types or narrow unions first, and only use `untyped` when there is no practical typed alternative.
 - Preserve inline instance variable type comments:
 
 ```ruby

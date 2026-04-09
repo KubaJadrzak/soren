@@ -1,38 +1,38 @@
 require_relative '../../../test_helper'
-require_relative '../../../../lib/soren/types/config/timeout/base'
+require_relative '../../../../lib/soren/types/options/timeout/base'
 
 module Soren
   module Types
-    module Config
+    module Options
       class TimeoutTest < Minitest::Test
         def test_accepts_integer_timeout
-          timeout = Timeout::Base.new(10)
+          timeout = Timeout::Base.new(1000)
 
-          assert_equal 10, timeout.to_i
+          assert_equal 1000, timeout.to_i
         end
 
         def test_accepts_string_integer_timeout
-          timeout = Timeout::Base.new('25')
+          timeout = Timeout::Base.new('2500')
 
-          assert_equal 25, timeout.to_i
+          assert_equal 2500, timeout.to_i
         end
 
-        def test_accepts_zero_timeout
-          timeout = Timeout::Base.new(0)
+        def test_rejects_timeout_below_minimum
+          error = assert_raises(Soren::Error::ArgumentError) { Timeout::Base.new(3) }
 
-          assert_equal 0, timeout.to_i
+          assert_equal 'timeout must be at least 100 milliseconds', error.message
         end
 
         def test_uses_default_when_timeout_is_nil
-          timeout = Timeout::Base.new(nil, default: 15)
+          timeout = Timeout::Base.new(nil, default: 1500)
 
-          assert_equal 15, timeout.to_i
+          assert_equal 1500, timeout.to_i
         end
 
         def test_uses_default_when_timeout_is_blank_string
-          timeout = Timeout::Base.new(' ', default: 20)
+          timeout = Timeout::Base.new(' ', default: 2000)
 
-          assert_equal 20, timeout.to_i
+          assert_equal 2000, timeout.to_i
         end
 
         def test_rejects_non_integer_timeout

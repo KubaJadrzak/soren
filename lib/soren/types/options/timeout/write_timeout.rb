@@ -2,16 +2,16 @@
 # frozen_string_literal: true
 
 require_relative 'base'
-require_relative '../../../defaults/config'
+require_relative '../../../defaults/options'
 
 module Soren
   module Types
-    module Config
+    module Options
       module Timeout
         class WriteTimeout < Base
           #: (untyped) -> void
           def initialize(timeout)
-            super(timeout, default: Soren::Defaults::Config::WRITE_TIMEOUT)
+            super(timeout, default: Soren::Defaults::Options::WRITE_TIMEOUT)
           end
         end
       end

@@ -8,7 +8,7 @@ require_relative 'timeout/write_timeout'
 
 module Soren
   module Types
-    module Config
+    module Options
       module Timeout
       end
     end
