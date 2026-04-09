@@ -40,7 +40,8 @@ module Soren
 
       #: -> Soren::Response
       def read_response
-        Soren::Response.new(@socket)
+        deadline = Deadline.start(@options.read_timeout.to_f)
+        Soren::Response.new(@socket, deadline: deadline)
       end
 
       private

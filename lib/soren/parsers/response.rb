@@ -8,18 +8,20 @@ require_relative 'headers'
 require_relative 'body'
 require_relative '../types/response/headers'
 require_relative '../socket/reader'
+require_relative '../deadline'
 
 module Soren
   module Parsers
     class Response
-      #: (untyped) -> void
-      def initialize(source)
+      #: (untyped, ?deadline: Deadline?) -> void
+      def initialize(source, deadline: nil)
         @source = source #: untyped
+        @deadline = deadline #: Deadline?
       end
 
       #: -> Hash[Symbol, untyped]
       def parse
-        reader = Soren::Socket::Reader.new(@source)
+        reader = Soren::Socket::Reader.new(@source, deadline: @deadline)
 
         status_line = reader.read_line
         if status_line.nil? || status_line.blank?
