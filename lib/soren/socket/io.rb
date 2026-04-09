@@ -48,7 +48,6 @@ module Soren
 
       #: (StandardError, Deadline?) -> void
       def handle_write_error(error, deadline)
-        # Check if the exception is IO::WaitWritable (dynamically added by 'io/wait')
         return if error.class.to_s != 'IO::WaitWritable'
 
         writable = wait_writable(deadline&.remaining)

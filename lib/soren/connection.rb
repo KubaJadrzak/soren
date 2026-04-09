@@ -4,6 +4,7 @@
 require 'socket'
 require 'openssl'
 require 'timeout'
+require 'io/wait'
 
 require_relative 'types/connection/host'
 require_relative 'types/connection/port'
@@ -30,15 +31,19 @@ module Soren
 
     #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)
     def open_socket
-      tcp = TCPSocket.new(@host.to_s, @port.to_i, connection_timeout: @options.connect_timeout)
+      deadline = Deadline.start(@options.connect_timeout.to_f)
+      tcp = open_tcp_socket(deadline&.remaining)
 
       return tcp unless @scheme.https?
 
       ctx = OpenSSL::SSL::SSLContext.new
       ssl = OpenSSL::SSL::SSLSocket.new(tcp, ctx)
       ssl.hostname = @host.to_s
-      ssl.connect
+      ssl_connect_with_timeout(ssl, deadline)
       ssl
+    rescue Soren::Error::TimeoutError => e
+      tcp&.close
+      raise e
     rescue Timeout::Error, Errno::ETIMEDOUT => e
       tcp&.close
       raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
@@ -71,6 +76,29 @@ module Soren
     end
 
     private
+
+    #: (Float?) -> TCPSocket
+    def open_tcp_socket(timeout)
+      ::Socket.tcp(@host.to_s, @port.to_i, connect_timeout: timeout)
+    end
+
+    #: (OpenSSL::SSL::SSLSocket, Soren::Deadline?) -> void
+    def ssl_connect_with_timeout(ssl, deadline)
+      loop do
+        raise Soren::Error::TimeoutError, 'SSL connect timeout' if deadline&.expired?
+
+        begin
+          ssl.connect_nonblock
+          return
+        rescue IO::WaitReadable
+          readable = ssl.to_io.wait_readable(deadline&.remaining)
+          raise Soren::Error::TimeoutError, 'SSL connect timeout' unless readable
+        rescue IO::WaitWritable
+          writable = ssl.to_io.wait_writable(deadline&.remaining)
+          raise Soren::Error::TimeoutError, 'SSL connect timeout' unless writable
+        end
+      end
+    end
 
     #: (host: untyped, port: untyped, scheme: untyped, uri: untyped) -> [untyped, untyped, untyped]
     def resolve_connection_parts(host:, port:, scheme:, uri:)

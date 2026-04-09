@@ -3,6 +3,9 @@
 require 'test_helper'
 require 'uri'
 require 'stringio'
+require 'json'
+
+require_relative '../lib/soren/request'
 
 class TestSoren < Minitest::Test
   def test_that_it_has_a_version_number
@@ -13,14 +16,15 @@ class TestSoren < Minitest::Test
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
     fake_socket = Object.new
 
-    tcp_socket_stub = ->(host, port, connection_timeout:) do
+    tcp_socket_stub = ->(host, port, connect_timeout:) do
       assert_equal 'example.com', host
       assert_equal 443, port
-      assert_equal Soren::Defaults::Options::CONNECT_TIMEOUT, connection_timeout
+      assert_operator connect_timeout, :>, 0.0
+      assert_operator connect_timeout, :<=, Soren::Defaults::Options::CONNECT_TIMEOUT
       fake_socket
     end
 
-    socket = TCPSocket.stub(:new, tcp_socket_stub) do
+    socket = Socket.stub(:tcp, tcp_socket_stub) do
       connection.open_socket
     end
 
@@ -30,7 +34,7 @@ class TestSoren < Minitest::Test
   def test_open_socket_wraps_tcp_errors
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
 
-    error = TCPSocket.stub(:new, ->(*_) { raise ::SocketError, 'boom' }) do
+    error = Socket.stub(:tcp, ->(*_) { raise ::SocketError, 'boom' }) do
       assert_raises(Soren::Error::DNSFailure) { connection.open_socket }
     end
 
@@ -43,7 +47,7 @@ class TestSoren < Minitest::Test
 
     fake_tcp.define_singleton_method(:close) { true }
 
-    error = TCPSocket.stub(:new, ->(*_) { fake_tcp }) do
+    error = Socket.stub(:tcp, ->(*_) { fake_tcp }) do
       OpenSSL::SSL::SSLSocket.stub(:new, ->(*_) { raise OpenSSL::SSL::SSLError, 'handshake failed' }) do
         assert_raises(Soren::Error::SSLError) { connection.open_socket }
       end
@@ -52,10 +56,40 @@ class TestSoren < Minitest::Test
     assert_match(/SSL error: handshake failed/, error.message)
   end
 
+  def test_open_socket_raises_timeout_when_ssl_connect_is_not_writable
+    connection = Soren::Connection.new(
+      host:    'example.com',
+      port:    443,
+      scheme:  'https',
+      options: { connect_timeout: 0.1 },
+    )
+
+    fake_tcp = Object.new
+    fake_tcp.define_singleton_method(:close) { true }
+
+    wait_writable_error_class = Class.new(StandardError) do
+      include IO::WaitWritable
+    end
+
+    fake_ssl = Object.new
+    fake_ssl.define_singleton_method(:hostname=) { |_host| true }
+    fake_ssl.define_singleton_method(:connect_nonblock) { raise wait_writable_error_class, 'wait writable' }
+    fake_ssl.define_singleton_method(:to_io) { self }
+    fake_ssl.define_singleton_method(:wait_writable) { |_timeout| nil }
+
+    error = Socket.stub(:tcp, ->(*_) { fake_tcp }) do
+      OpenSSL::SSL::SSLSocket.stub(:new, ->(*_) { fake_ssl }) do
+        assert_raises(Soren::Error::TimeoutError) { connection.open_socket }
+      end
+    end
+
+    assert_equal 'SSL connect timeout', error.message
+  end
+
   def test_open_socket_wraps_timeout_errors
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
 
-    error = TCPSocket.stub(:new, ->(*_) { raise Errno::ETIMEDOUT, 'timed out' }) do
+    error = Socket.stub(:tcp, ->(*_) { raise Errno::ETIMEDOUT, 'timed out' }) do
       assert_raises(Soren::Error::TimeoutError) { connection.open_socket }
     end
 
@@ -130,6 +164,56 @@ class TestSoren < Minitest::Test
 
     assert_equal true, closed
     assert_instance_of Soren::Error::WriteTimeout, error
+  end
+
+  def test_real_http_requests_for_supported_methods
+    connection = Soren::Connection.new(
+      host:    'httpbin.org',
+      port:    443,
+      scheme:  'https',
+      options: { connect_timeout: 10.0, write_timeout: 10.0, read_timeout: 20.0 },
+    )
+
+    %w[get post put patch delete].each do |http_method|
+      request = Soren::Request.new(
+        method:  http_method,
+        target:  '/anything/soren-real-http-test',
+        headers: { 'Accept' => 'application/json' },
+      )
+
+      response = connection.send(request)
+      assert_equal 200, response.status_code.to_i, "unexpected status for #{http_method}"
+
+      payload = JSON.parse(response.body.to_s)
+      assert_equal http_method.upcase, payload['method'], "unexpected echoed method for #{http_method}"
+    end
+  rescue Soren::Error::Base, SystemCallError, IOError, ::SocketError => e
+    skip "internet integration unavailable: #{e.class}: #{e.message}"
+  end
+
+  def test_real_http_requests_for_supported_methods_over_http
+    connection = Soren::Connection.new(
+      host:    'httpbin.org',
+      port:    80,
+      scheme:  'http',
+      options: { connect_timeout: 10.0, write_timeout: 10.0, read_timeout: 20.0 },
+    )
+
+    %w[get post put patch delete].each do |http_method|
+      request = Soren::Request.new(
+        method:  http_method,
+        target:  '/anything/soren-real-http-test',
+        headers: { 'Accept' => 'application/json' },
+      )
+
+      response = connection.send(request)
+      assert_equal 200, response.status_code.to_i, "unexpected status for #{http_method}"
+
+      payload = JSON.parse(response.body.to_s)
+      assert_equal http_method.upcase, payload['method'], "unexpected echoed method for #{http_method}"
+    end
+  rescue Soren::Error::Base, SystemCallError, IOError, ::SocketError => e
+    skip "internet integration unavailable: #{e.class}: #{e.message}"
   end
 
   def test_new_accepts_explicit_host_port_and_scheme
