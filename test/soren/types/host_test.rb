@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'minitest/autorun'
 require 'resolv'
 require_relative '../../../lib/soren/types/connection/host' # adjust path as needed

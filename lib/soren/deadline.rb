@@ -3,12 +3,13 @@
 
 module Soren
   class Deadline
-    #: (Integer?) -> Soren::Deadline?
-    def self.start(timeout)
-      return unless timeout
+    class << self
+      #: (Float?) -> Soren::Deadline?
+      def start(timeout)
+        return unless timeout
 
-      timeout_seconds = timeout.to_f / 1000.0
-      new(Process.clock_gettime(Process::CLOCK_MONOTONIC).to_f + timeout_seconds)
+        new(Process.clock_gettime(Process::CLOCK_MONOTONIC).to_f + timeout)
+      end
     end
 
     #: (Float) -> void

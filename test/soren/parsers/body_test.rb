@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../test_helper'
 require_relative '../../../lib/soren/parsers/body'
 require_relative '../../../lib/soren/types/response/headers'
@@ -45,7 +47,7 @@ module Soren
         assert_equal 'cannot determine body length with keep-alive', error.message
       end
 
-      def test_returns_empty_body_for_status_204
+      def test_returns_empty_body_for_status_two_zero_four
         socket = StringIO.new('should be ignored')
         headers = Soren::Types::Response::Headers.new({ 'content-length' => ['17'] })
 
@@ -54,7 +56,7 @@ module Soren
         assert_equal '', body
       end
 
-      def test_returns_empty_body_for_status_304
+      def test_returns_empty_body_for_status_three_zero_four
         socket = StringIO.new('should be ignored')
         headers = Soren::Types::Response::Headers.new({ 'content-length' => ['17'] })
 

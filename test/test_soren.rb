@@ -105,6 +105,36 @@ class TestSoren < Minitest::Test
     connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
 
     assert_instance_of Soren::Connection, connection
+    assert_instance_of Soren::Options, connection.options
+    assert_equal Soren::Defaults::Options::READ_TIMEOUT, connection.options.read_timeout.to_f
+    assert_equal Soren::Defaults::Options::CONNECT_TIMEOUT, connection.options.connect_timeout.to_f
+    assert_equal Soren::Defaults::Options::WRITE_TIMEOUT, connection.options.write_timeout.to_f
+  end
+
+  def test_new_accepts_options_hash
+    connection = Soren::Connection.new(
+      host:    'example.com',
+      port:    443,
+      scheme:  'https',
+      options: { read_timeout: '1.25', 'connect_timeout' => 2, write_timeout: 3.5 },
+    )
+
+    assert_equal 1.25, connection.options.read_timeout.to_f
+    assert_equal 2.0, connection.options.connect_timeout.to_f
+    assert_equal 3.5, connection.options.write_timeout.to_f
+  end
+
+  def test_new_rejects_unsupported_options
+    error = assert_raises(Soren::Error::ArgumentError) do
+      Soren::Connection.new(
+        host:    'example.com',
+        port:    443,
+        scheme:  'https',
+        options: { unknown_timeout: 1.0 },
+      )
+    end
+
+    assert_equal 'unsupported option: unknown_timeout', error.message
   end
 
   def test_new_accepts_uri_object

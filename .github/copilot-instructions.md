@@ -4,14 +4,16 @@ This file defines conventions for AI-assisted changes in this repository.
 
 ## Mandatory Verification
 
-For every code change, always run both commands before considering work complete:
+For every code change, always run all commands below before considering work complete:
 
 ```bash
 bundle exec rake test
 bundle exec srb tc
+bundle exec rubocop
 ```
 
 Do not skip Sorbet type checking when code has changed.
+Do not skip RuboCop; fix linter issues introduced by your changes.
 
 ## Scope And Intent
 
@@ -49,7 +51,9 @@ Conventions:
 
 - Add a signature comment before public and private methods when touching typed files.
 - Use existing local style (`untyped`, `String`, `Integer`, `bool`, `Type?`, `Hash[...]`, `Array[...]`).
+- For values accepted from external callers, type input parameters as `untyped` and narrow them through explicit validation/coercion inside the method.
 - Do not use `untyped` as a default fix for Sorbet errors; prefer specific types or narrow unions first, and only use `untyped` when there is no practical typed alternative.
+- For complex hashes, `Hash[KeyType, untyped]` is acceptable for the value type when a precise value union would be excessively complex or brittle.
 - Preserve inline instance variable type comments:
 
 ```ruby
@@ -127,7 +131,7 @@ bundle exec rake test
 bundle exec srb tc
 ```
 
-5. If style-related edits are needed, run:
+5. Run RuboCop and fix lint issues:
 
 ```bash
 bundle exec rubocop

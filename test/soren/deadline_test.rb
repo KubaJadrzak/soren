@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../test_helper'
 require_relative '../../lib/soren/deadline'
 
@@ -7,9 +9,9 @@ module Soren
       assert_nil Deadline.start(nil)
     end
 
-    def test_start_uses_monotonic_clock_and_millisecond_timeout
+    def test_start_uses_monotonic_clock_and_second_timeout
       deadline = Process.stub(:clock_gettime, ->(*_) { 100.0 }) do
-        Deadline.start(2500)
+        Deadline.start(2.5)
       end
 
       assert_in_delta 1.5, Process.stub(:clock_gettime, ->(*_) { 101.0 }) { deadline.remaining }, 0.0001

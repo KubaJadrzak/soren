@@ -9,17 +9,21 @@ require_relative 'types/connection/host'
 require_relative 'types/connection/port'
 require_relative 'types/connection/scheme'
 require_relative 'types/connection/uri'
+require_relative 'options'
 require_relative 'response'
 
 module Soren
   class Connection
-    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped) -> void
-    def initialize(host: nil, port: nil, scheme: nil, uri: nil)
+    attr_reader :options #: Soren::Options?
+
+    #: (?host: untyped, ?port: untyped, ?scheme: untyped, ?uri: untyped, ?options: untyped) -> void
+    def initialize(host: nil, port: nil, scheme: nil, uri: nil, options: {})
       host, port, scheme = resolve_connection_parts(host: host, port: port, scheme: scheme, uri: uri)
 
       @host = Soren::Types::Connection::Host.new(host) #: Soren::Types::Connection::Host
       @port = Soren::Types::Connection::Port.new(port) #: Soren::Types::Connection::Port
       @scheme = Soren::Types::Connection::Scheme.new(scheme) #: Soren::Types::Connection::Scheme
+      @options = Soren::Options.new(options) #: Soren::Options
     end
 
     #: -> (TCPSocket | OpenSSL::SSL::SSLSocket)

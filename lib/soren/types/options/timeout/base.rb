@@ -1,47 +1,44 @@
 # typed: strict
 # frozen_string_literal: true
 
-require_relative '../../../defaults/options'
-
 module Soren
   module Types
     module Options
       module Timeout
         class Base
-          #: (untyped, ?default: Integer?) -> void
+          #: (Float | Integer | String | nil, ?default: Float?) -> void
           def initialize(timeout, default: nil)
             timeout = default if timeout.blank?
-            @timeout = validate(timeout) #: Integer
+            @timeout = validate(timeout) #: Float
           end
 
-          #: -> Integer
-          def to_i
+          #: -> Float
+          def to_f
             @timeout
           end
 
           private
 
-          #: (untyped) -> Integer
+          #: (Float | Integer | String | nil) -> Float
           def validate(timeout)
             if timeout.is_a?(String)
               begin
-                timeout = Integer(timeout)
+                timeout = Float(timeout)
               rescue ArgumentError
-                raise Soren::Error::ArgumentError, 'timeout must be an integer'
+                raise Soren::Error::ArgumentError, 'timeout must be a float'
               end
             end
 
-            unless timeout.is_a?(Integer)
-              raise Soren::Error::ArgumentError, 'timeout must be an integer'
+            if timeout.is_a?(Integer)
+              timeout = timeout.to_f
+            end
+
+            unless timeout.is_a?(Float)
+              raise Soren::Error::ArgumentError, 'timeout must be a float'
             end
 
             if timeout.negative?
               raise Soren::Error::ArgumentError, 'timeout must be greater than or equal to 0'
-            end
-
-            if timeout < Soren::Defaults::Options::MIN_TIMEOUT
-              raise Soren::Error::ArgumentError,
-                    "timeout must be at least #{Soren::Defaults::Options::MIN_TIMEOUT} milliseconds"
             end
 
             timeout
