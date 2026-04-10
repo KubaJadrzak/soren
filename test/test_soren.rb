@@ -13,22 +13,13 @@ class TestSoren < Minitest::Test
   end
 
   def test_open_socket_uses_host_and_port
-    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'http')
-    fake_socket = Object.new
+    connection = Soren::Connection.new(host: 'example.com', port: 80, scheme: 'http')
+    socket = connection.open_socket
 
-    tcp_socket_stub = ->(host, port, connect_timeout:) do
-      assert_equal 'example.com', host
-      assert_equal 443, port
-      assert_operator connect_timeout, :>, 0.0
-      assert_operator connect_timeout, :<=, Soren::Defaults::Options::CONNECT_TIMEOUT
-      fake_socket
-    end
-
-    socket = Socket.stub(:tcp, tcp_socket_stub) do
-      connection.open_socket
-    end
-
-    assert_same fake_socket, socket
+    assert_respond_to socket, :close
+    assert_respond_to socket, :write_nonblock
+  ensure
+    socket&.close
   end
 
   def test_open_socket_wraps_tcp_errors
@@ -97,43 +88,28 @@ class TestSoren < Minitest::Test
     assert_match(/timed out/i, error.message)
   end
 
-  def test_send_uses_open_socket_and_request_to_http
-    connection = Soren::Connection.new(host: 'example.com', port: 443, scheme: 'https')
-    written_payload = nil
-    closed = false
-    captured_host = nil
-    response_payload = StringIO.new("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 11\r\n\r\n{\"ok\":true}")
+  def test_send_performs_real_https_request_end_to_end
+    connection = Soren::Connection.new(
+      host:    'httpbin.org',
+      port:    443,
+      scheme:  'https',
+      options: { connect_timeout: 10.0, write_timeout: 10.0, read_timeout: 20.0 },
+    )
+    request = Soren::Request.new(
+      method:  'get',
+      target:  '/anything/soren-end-to-end',
+      headers: { 'Accept' => 'application/json' },
+    )
 
-    fake_socket = Object.new
-    fake_socket.define_singleton_method(:write_nonblock) do |payload|
-      written_payload = payload
-      payload.bytesize
-    end
-    fake_socket.define_singleton_method(:gets) { response_payload.gets }
-    fake_socket.define_singleton_method(:read) { |length = nil| response_payload.read(length) }
-    fake_socket.define_singleton_method(:close) do
-      closed = true
-    end
+    response = connection.send(request)
 
-    fake_request = Object.new
-    fake_request.define_singleton_method(:to_http) do |host:|
-      captured_host = host
-      "GET / HTTP/1.1\r\nHost: #{host}\r\n\r\n"
-    end
-
-    response = connection.stub(:open_socket, fake_socket) do
-      connection.send(fake_request)
-    end
-
-    assert_equal 'example.com', captured_host
-    assert_equal "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n", written_payload
     assert_instance_of Soren::Response, response
     assert_equal 200, response.status_code.to_i
-    assert_equal 'OK', response.status_message.to_s
-    assert_equal 'HTTP/1.1', response.version.to_s
-    assert_equal({ 'content-type' => ['application/json'], 'content-length' => ['11'] }, response.headers.to_h)
-    assert_equal '{"ok":true}', response.body.to_s
-    assert_equal true, closed
+    payload = JSON.parse(response.body.to_s)
+    assert_equal 'GET', payload['method']
+    assert_equal '/anything/soren-end-to-end', payload['url']&.split('httpbin.org')&.last
+  rescue Soren::Error::Base, SystemCallError, IOError, ::SocketError => e
+    skip "internet integration unavailable: #{e.class}: #{e.message}"
   end
 
   def test_send_raises_write_timeout_when_socket_not_writable

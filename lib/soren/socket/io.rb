@@ -5,6 +5,7 @@ require 'io/wait'
 
 require_relative '../deadline'
 require_relative '../response'
+require_relative '../parsers/response'
 
 module Soren
   module Socket
@@ -41,7 +42,8 @@ module Soren
       #: -> Soren::Response
       def read_response
         deadline = Deadline.start(@options.read_timeout.to_f)
-        Soren::Response.new(@socket, deadline: deadline)
+        parsed_response = Soren::Parsers::Response.new(@socket, deadline: deadline).parse
+        Soren::Response.new(parsed_response)
       end
 
       private

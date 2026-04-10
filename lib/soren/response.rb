@@ -6,8 +6,6 @@ require_relative 'types/response/status_message'
 require_relative 'types/response/version'
 require_relative 'types/response/headers'
 require_relative 'types/response/body'
-require_relative 'parsers/response'
-require_relative 'deadline'
 
 module Soren
   class Response
@@ -17,10 +15,8 @@ module Soren
     attr_reader :headers #: Soren::Types::Response::Headers?
     attr_reader :body #: Soren::Types::Response::Body?
 
-    #: (untyped, ?deadline: Deadline?) -> void
-    def initialize(socket, deadline: nil)
-      parsed_response = Soren::Parsers::Response.new(socket, deadline: deadline).parse
-
+    #: (Hash[Symbol, untyped]) -> void
+    def initialize(parsed_response)
       parsed_status_line = parsed_response[:status_line]
       @version = Soren::Types::Response::Version.new(parsed_status_line[:version]) #: Soren::Types::Response::Version?
       @status_code = Soren::Types::Response::StatusCode.new(parsed_status_line[:status_code]) #: Soren::Types::Response::StatusCode?

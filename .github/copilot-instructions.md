@@ -114,6 +114,8 @@ Test conventions:
 - Use clear method names: `test_*`.
 - Prefer explicit assertions and exact message checks for raised errors.
 - Use `assert_raises(Soren::Error::...)` for domain errors.
+- Avoid stubbing, faking, or mocking when real execution is practical.
+- Prefer real internet-backed requests for end-to-end library behavior (connection, request write, response parse) when the scenario can run deterministically; use stubs only for edge/error paths that cannot be triggered reliably in live environments.
 
 ## Typical Change Workflow
 

@@ -2,6 +2,7 @@
 
 require_relative '../test_helper'
 require_relative '../../lib/soren/response'
+require_relative '../../lib/soren/parsers/response'
 
 module Soren
   class ResponseTest < Minitest::Test
@@ -14,7 +15,7 @@ module Soren
         'not found',
       ].join("\r\n")
 
-      response = Response.new(raw_response)
+      response = build_response(raw_response)
 
       assert_equal 'HTTP/1.1', response.version.to_s
       assert_equal 404, response.status_code.to_i
@@ -33,14 +34,14 @@ module Soren
         '',
       ].join("\r\n")
 
-      response = Response.new(raw_response)
+      response = build_response(raw_response)
 
       assert_equal({ 'set-cookie' => ['a=1', 'b=2'], 'content-length' => ['0'] }, response.headers.to_h)
     end
 
     def test_rejects_invalid_status_line
       error = assert_raises(Soren::Error::ParseError) do
-        Response.new("INVALID\r\n\r\n")
+        build_response("INVALID\r\n\r\n")
       end
 
       assert_equal 'invalid HTTP status line', error.message
@@ -48,7 +49,7 @@ module Soren
 
     def test_rejects_invalid_header_line
       error = assert_raises(Soren::Error::ParseError) do
-        Response.new("HTTP/1.1 200 OK\r\nInvalidHeader\r\n\r\n")
+        build_response("HTTP/1.1 200 OK\r\nInvalidHeader\r\n\r\n")
       end
 
       assert_equal 'invalid HTTP header line', error.message
@@ -56,10 +57,17 @@ module Soren
 
     def test_rejects_status_line_with_missing_status_message
       error = assert_raises(Soren::Error::ParseError) do
-        Response.new("HTTP/1.1 200    \r\n\r\n")
+        build_response("HTTP/1.1 200    \r\n\r\n")
       end
 
       assert_equal 'status line must include version, status_code and status_message', error.message
+    end
+
+    private
+
+    def build_response(raw_response)
+      parsed_response = Soren::Parsers::Response.new(raw_response).parse
+      Response.new(parsed_response)
     end
   end
 end
