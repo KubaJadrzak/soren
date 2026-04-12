@@ -9,6 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ['kuba.jadrzak@gmail.com']
 
   spec.summary = 'Simple HTTP client library'
+  spec.description = 'Simple HTTP client library'
   spec.homepage = 'https://github.com/KubaJadrzak/soren'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 3.2'
@@ -19,7 +20,8 @@ Gem::Specification.new do |spec|
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
       (f == gemspec) ||
-        f.start_with?(*%w[bin/ test/ .git .github appveyor Gemfile])
+        f.start_with?(*%w[bin/ test/ .git/ .github/ Gemfile]) ||
+        f == 'appveyor.yml'
     end
   end
   spec.require_paths = ['lib']
@@ -29,5 +31,8 @@ Gem::Specification.new do |spec|
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
+  spec.metadata['homepage_uri'] = spec.homepage
+  spec.metadata['source_code_uri'] = spec.homepage
+  spec.metadata['changelog_uri'] = 'https://github.com/KubaJadrzak/soren/blob/main/CHANGELOG.md'
   spec.metadata['rubygems_mfa_required'] = 'true'
 end
