@@ -104,12 +104,10 @@ class TestSoren < Minitest::Test
     response = connection.send(request)
 
     assert_instance_of Soren::Response, response
-    assert_equal 200, response.status_code.to_i
-    payload = JSON.parse(response.body.to_s)
+    assert_equal 200, response.code
+    payload = JSON.parse(response.body)
     assert_equal 'GET', payload['method']
     assert_equal '/anything/soren-end-to-end', payload['url']&.split('httpbin.org')&.last
-  rescue Soren::Error::Base, SystemCallError, IOError, ::SocketError => e
-    skip "internet integration unavailable: #{e.class}: #{e.message}"
   end
 
   def test_send_raises_write_timeout_when_socket_not_writable
@@ -158,13 +156,11 @@ class TestSoren < Minitest::Test
       )
 
       response = connection.send(request)
-      assert_equal 200, response.status_code.to_i, "unexpected status for #{http_method}"
+      assert_equal 200, response.code, "unexpected status for #{http_method}"
 
-      payload = JSON.parse(response.body.to_s)
+      payload = JSON.parse(response.body)
       assert_equal http_method.upcase, payload['method'], "unexpected echoed method for #{http_method}"
     end
-  rescue Soren::Error::Base, SystemCallError, IOError, ::SocketError => e
-    skip "internet integration unavailable: #{e.class}: #{e.message}"
   end
 
   def test_real_http_requests_for_supported_methods_over_http
@@ -183,13 +179,11 @@ class TestSoren < Minitest::Test
       )
 
       response = connection.send(request)
-      assert_equal 200, response.status_code.to_i, "unexpected status for #{http_method}"
+      assert_equal 200, response.code, "unexpected status for #{http_method}"
 
-      payload = JSON.parse(response.body.to_s)
+      payload = JSON.parse(response.body)
       assert_equal http_method.upcase, payload['method'], "unexpected echoed method for #{http_method}"
     end
-  rescue Soren::Error::Base, SystemCallError, IOError, ::SocketError => e
-    skip "internet integration unavailable: #{e.class}: #{e.message}"
   end
 
   def test_new_accepts_explicit_host_port_and_scheme

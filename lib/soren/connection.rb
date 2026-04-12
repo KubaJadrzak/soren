@@ -66,7 +66,8 @@ module Soren
       socket = open_socket
       io = Soren::Socket::IO.new(socket, request, @options, host: @host)
       io.write_request
-      io.read_response
+      parsed_response = io.read_response
+      Soren::Response.new(parsed_response)
     rescue Timeout::Error, Errno::ETIMEDOUT => e
       raise Soren::Error::TimeoutError, "connection timeout: #{e.message}"
     rescue SystemCallError, IOError => e

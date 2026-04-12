@@ -14,6 +14,7 @@ bundle exec rubocop
 
 Do not skip Sorbet type checking when code has changed.
 Do not skip RuboCop; fix linter issues introduced by your changes.
+If `bundle exec rake test` fails due to internet connectivity issues in internet-backed tests, rerun it up to 2 additional times (3 total attempts) before proceeding to `bundle exec srb tc` and `bundle exec rubocop`.
 
 ## Scope And Intent
 
@@ -103,6 +104,7 @@ When adding rescue blocks:
 - Existing code intentionally allows extra blank lines and alignment choices.
 - Keep current indentation and spacing style of the touched file.
 - Do not enforce generic style defaults that conflict with repository patterns.
+- Prefer the project's custom `blank?` helper from `lib/soren/core_ext/blank.rb` for blank checks on nil/String values; avoid patterns like `value.nil? || value.strip.empty?`.
 
 ## Tests
 

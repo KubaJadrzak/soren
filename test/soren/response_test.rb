@@ -17,11 +17,11 @@ module Soren
 
       response = build_response(raw_response)
 
-      assert_equal 'HTTP/1.1', response.version.to_s
-      assert_equal 404, response.status_code.to_i
-      assert_equal 'Not Found', response.status_message.to_s
-      assert_equal({ 'content-type' => ['text/plain'], 'content-length' => ['9'] }, response.headers.to_h)
-      assert_equal 'not found', response.body.to_s
+      assert_equal 'HTTP/1.1', response.version
+      assert_equal 404, response.code
+      assert_equal 'Not Found', response.message
+      assert_equal({ 'content-type' => ['text/plain'], 'content-length' => ['9'] }, response.headers)
+      assert_equal 'not found', response.body
     end
 
     def test_merges_duplicate_headers_into_arrays
@@ -36,7 +36,7 @@ module Soren
 
       response = build_response(raw_response)
 
-      assert_equal({ 'set-cookie' => ['a=1', 'b=2'], 'content-length' => ['0'] }, response.headers.to_h)
+      assert_equal({ 'set-cookie' => ['a=1', 'b=2'], 'content-length' => ['0'] }, response.headers)
     end
 
     def test_rejects_invalid_status_line
@@ -55,12 +55,12 @@ module Soren
       assert_equal 'invalid HTTP header line', error.message
     end
 
-    def test_rejects_status_line_with_missing_status_message
+    def test_rejects_status_line_with_missing_message
       error = assert_raises(Soren::Error::ParseError) do
         build_response("HTTP/1.1 200    \r\n\r\n")
       end
 
-      assert_equal 'status line must include version, status_code and status_message', error.message
+      assert_equal 'status line must include version, code and message', error.message
     end
 
     private
