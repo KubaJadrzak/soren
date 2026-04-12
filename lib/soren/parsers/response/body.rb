@@ -4,19 +4,17 @@
 require_relative '../../decoders/gzip'
 require_relative '../../decoders/deflate'
 require_relative '../../socket/reader'
+require_relative '../../types/response/code'
 
 module Soren
   module Parsers
     class Response
       class Body
-        NO_CONTENT_STATUS_CODE = 204
-        NOT_MODIFIED_STATUS_CODE = 304
-
-        #: (reader: Soren::Socket::Reader, headers: Soren::Types::Response::Headers, code: Integer) -> void
+        #: (reader: Soren::Socket::Reader, headers: Soren::Types::Response::Headers, code: Soren::Types::Response::Code) -> void
         def initialize(reader:, headers:, code:)
           @reader = reader #: Soren::Socket::Reader
           @headers = headers #: Soren::Types::Response::Headers
-          @code = code #: Integer
+          @code = code #: Soren::Types::Response::Code
         end
 
         #: -> String
@@ -43,7 +41,7 @@ module Soren
 
         #: -> bool
         def no_body?
-          [NO_CONTENT_STATUS_CODE, NOT_MODIFIED_STATUS_CODE].include?(@code)
+          @code.no_body?
         end
 
         #: (String) -> String

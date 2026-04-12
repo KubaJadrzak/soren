@@ -18,10 +18,16 @@ module Soren
 
           parsed = Response.new(raw_response).parse
 
-          assert_equal({ version: 'HTTP/1.1', code: 200, message: 'OK' }, parsed[:status_line])
+          assert_instance_of Soren::Types::Response::Version, parsed[:status_line][:version]
+          assert_equal 'HTTP/1.1', parsed[:status_line][:version].to_s
+          assert_instance_of Soren::Types::Response::Code, parsed[:status_line][:code]
+          assert_equal 200, parsed[:status_line][:code].to_i
+          assert_instance_of Soren::Types::Response::Message, parsed[:status_line][:message]
+          assert_equal 'OK', parsed[:status_line][:message].to_s
           assert_instance_of Soren::Types::Response::Headers, parsed[:headers]
           assert_equal({ 'content-type' => ['text/plain'], 'content-length' => ['5'] }, parsed[:headers].to_h)
-          assert_equal 'hello', parsed[:body]
+          assert_instance_of Soren::Types::Response::Body, parsed[:body]
+          assert_equal 'hello', parsed[:body].to_s
         end
 
         def test_raises_parse_error_for_invalid_status_line
