@@ -1,8 +1,6 @@
 # Soren
 
-Soren is a small, typed Ruby HTTP client focused on clarity and predictable behavior.
-
-It provides:
+Soren is a simple HTTP client library. At the current moment the library provides the following functionality:
 
 - strict input validation for request/connection parameters,
 - configurable read/connect/write timeouts,
@@ -78,11 +76,11 @@ require 'uri'
 connection = Soren::Connection.new(uri: URI('https://example.com'))
 ```
 
-Do not mix both forms in one initializer call.
+Do not mix use both at the same time!!!
 
-## Timeouts and Options
+## Options
 
-Soren supports three timeout options:
+Soren currently supports timeouts as configuration options, with the following three available:
 
 - `connect_timeout`
 - `write_timeout`
@@ -123,11 +121,9 @@ request = Soren::Request.new(
 )
 ```
 
-Supported common methods include `get`, `post`, `put`, `patch`, `delete`.
+Supported methods include `get`, `post`, `put`, `patch`, `delete`.
 
 ## Error Handling
-
-Soren raises explicit domain errors. In most applications, rescue a narrow set first, then a common base as fallback.
 
 ```ruby
 begin
@@ -149,8 +145,6 @@ end
 ```
 
 ### Error Classes
-
-Soren defines the following custom errors:
 
 - `Soren::Error::ArgumentError`
 - `Soren::Error::ConnectionError`
