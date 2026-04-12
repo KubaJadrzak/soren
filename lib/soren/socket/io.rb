@@ -9,12 +9,12 @@ require_relative '../parsers/response'
 module Soren
   module Socket
     class IO
-      #: ((TCPSocket | OpenSSL::SSL::SSLSocket), Soren::Request, Soren::Options, host: untyped) -> void
+      #: ((TCPSocket | OpenSSL::SSL::SSLSocket), Soren::Request, Soren::Options, host: Soren::Types::Connection::Host) -> void
       def initialize(socket, request, options, host:)
         @socket = socket #: (TCPSocket | OpenSSL::SSL::SSLSocket)
         @request = request #: Soren::Request
         @options = options #: Soren::Options
-        @host = host #: untyped
+        @host = host #: Soren::Types::Connection::Host
       end
 
       #: -> Integer

@@ -22,7 +22,7 @@ module Soren
       @body = Soren::Types::Request::Body.new(body) #: Soren::Types::Request::Body
     end
 
-    #: (host: untyped) -> String
+    #: (host: String) -> String
     def to_http(host:)
       request_line = "#{@method.to_http} #{@target.to_http} HTTP/1.1"
       header_lines = @headers.to_http(host: host)
