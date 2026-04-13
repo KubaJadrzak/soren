@@ -2,31 +2,10 @@
 
 Soren is a simple HTTP client library. At the current moment the library provides the following functionality:
 
-- strict input validation for request/connection parameters,
 - configurable read/connect/write timeouts,
 - HTTP and HTTPS support,
 - response parsing with header/body decoding (including chunked, gzip, and deflate),
 - explicit domain errors under `Soren::Error::*`.
-
-## Installation
-
-Add to your Gemfile:
-
-```ruby
-gem 'soren'
-```
-
-Then run:
-
-```bash
-bundle install
-```
-
-Or install directly:
-
-```bash
-gem install soren
-```
 
 ## Quick Start
 
@@ -76,7 +55,7 @@ require 'uri'
 connection = Soren::Connection.new(uri: URI('https://example.com'))
 ```
 
-Do not mix use both at the same time!!!
+Do not use both at the same time!!!
 
 ## Options
 
