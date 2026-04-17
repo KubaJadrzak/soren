@@ -19,10 +19,10 @@ module Soren
 
           version = status_line_match[1]
           status_text = status_line_match[2]
-          message = status_line_match[3]&.strip
+          message = (status_line_match[3] || '').strip
 
-          if version.blank? || status_text.blank? || message.blank?
-            raise Soren::Error::ParseError, 'status line must include version, code and message'
+          if version.blank? || status_text.blank?
+            raise Soren::Error::ParseError, 'status line must include version and code'
           end
 
           {

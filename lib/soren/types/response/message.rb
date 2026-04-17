@@ -19,8 +19,8 @@ module Soren
 
         #: (untyped) -> String
         def validate(message)
-          unless message.is_a?(String) && !message.blank?
-            raise Soren::Error::ParseError, 'message must be a non-empty String'
+          unless message.is_a?(String)
+            raise Soren::Error::ParseError, 'message must be a String'
           end
 
           message

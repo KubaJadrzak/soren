@@ -13,6 +13,12 @@ module Soren
           assert_equal({ version: 'HTTP/1.1', code: 201, message: 'Created' }, parsed)
         end
 
+        def test_parses_status_line_without_reason_phrase
+          parsed = Soren::Parsers::Response::StatusLine.new('HTTP/1.1 200').parse
+
+          assert_equal({ version: 'HTTP/1.1', code: 200, message: '' }, parsed)
+        end
+
         def test_rejects_invalid_status_line
           error = assert_raises(Soren::Error::ParseError) { Soren::Parsers::Response::StatusLine.new('INVALID').parse }
 

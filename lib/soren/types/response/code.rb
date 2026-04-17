@@ -20,7 +20,7 @@ module Soren
 
         #: -> bool
         def no_body?
-          [NO_CONTENT, NOT_MODIFIED].include?(@code)
+          (100..199).cover?(@code) || @code == NO_CONTENT || @code == NOT_MODIFIED
         end
 
         private

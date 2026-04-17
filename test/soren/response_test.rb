@@ -55,12 +55,11 @@ module Soren
       assert_equal 'invalid HTTP header line', error.message
     end
 
-    def test_rejects_status_line_with_missing_message
-      error = assert_raises(Soren::Error::ParseError) do
-        build_response("HTTP/1.1 200    \r\n\r\n")
-      end
+    def test_accepts_status_line_without_reason_phrase
+      response = build_response("HTTP/1.1 200\r\nContent-Length: 0\r\n\r\n")
 
-      assert_equal 'status line must include version, code and message', error.message
+      assert_equal 200, response.code
+      assert_equal '', response.message
     end
 
     private

@@ -38,6 +38,31 @@ module Soren
           assert_equal 'invalid HTTP status line', error.message
         end
 
+        def test_parses_response_with_no_reason_phrase
+          raw_response = "HTTP/1.1 200\r\nContent-Length: 0\r\n\r\n"
+
+          parsed = Response.new(raw_response).parse
+
+          assert_equal 200, parsed[:status_line][:code].to_i
+          assert_equal '', parsed[:status_line][:message].to_s
+        end
+
+        def test_skips_100_continue_and_parses_final_response
+          raw_response = [
+            'HTTP/1.1 100 Continue',
+            '',
+            'HTTP/1.1 200 OK',
+            'Content-Length: 2',
+            '',
+            'ok',
+          ].join("\r\n")
+
+          parsed = Response.new(raw_response).parse
+
+          assert_equal 200, parsed[:status_line][:code].to_i
+          assert_equal 'ok', parsed[:body].to_s
+        end
+
         def test_raises_protocol_error_for_unsupported_encoding
           raw_response = [
             'HTTP/1.1 200 OK',

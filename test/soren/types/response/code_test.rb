@@ -21,6 +21,11 @@ module Soren
           assert_equal true, Code.new(304).no_body?
         end
 
+        def test_no_body_is_true_for_one_xx
+          assert_equal true, Code.new(100).no_body?
+          assert_equal true, Code.new(199).no_body?
+        end
+
         def test_no_body_is_false_for_two_zero_zero
           assert_equal false, Code.new(200).no_body?
         end

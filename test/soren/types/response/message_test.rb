@@ -13,10 +13,16 @@ module Soren
           assert_equal 'Created', message.to_s
         end
 
-        def test_rejects_empty_message
-          error = assert_raises(Soren::Error::ParseError) { Message.new('  ') }
+        def test_accepts_empty_message
+          message = Message.new('')
 
-          assert_equal 'message must be a non-empty String', error.message
+          assert_equal '', message.to_s
+        end
+
+        def test_rejects_non_string_message
+          error = assert_raises(Soren::Error::ParseError) { Message.new(nil) }
+
+          assert_equal 'message must be a String', error.message
         end
       end
     end

@@ -27,35 +27,39 @@ module Soren
       def parse
         reader = Soren::Socket::Reader.new(@source, deadline: @deadline)
 
-        status_line = reader.read_line
-        if status_line.blank?
-          raise Soren::Error::ParseError, 'raw_response must be a non-empty String'
-        end
+        loop do
+          status_line = reader.read_line
+          if status_line.blank?
+            raise Soren::Error::ParseError, 'raw_response must be a non-empty String'
+          end
 
-        header_lines = read_header_lines(reader)
-        parsed_status_line = Soren::Parsers::Response::StatusLine.new(status_line.strip).parse
-        parsed_headers = Soren::Parsers::Response::Headers.new(header_lines).parse
+          header_lines = read_header_lines(reader)
+          parsed_status_line = Soren::Parsers::Response::StatusLine.new(status_line.strip).parse
 
-        version_object = Soren::Types::Response::Version.new(parsed_status_line[:version])
-        code = Soren::Types::Response::Code.new(parsed_status_line[:code])
-        message_object = Soren::Types::Response::Message.new(parsed_status_line[:message])
-        headers_object = Soren::Types::Response::Headers.new(parsed_headers)
-        parsed_body = Soren::Parsers::Response::Body.new(
-          reader:  reader,
-          headers: headers_object,
-          code:    code,
-        ).parse
-        body_object = Soren::Types::Response::Body.new(parsed_body)
+          next if (100..199).cover?(parsed_status_line[:code])
 
-        {
-          status_line: {
-            version: version_object,
+          parsed_headers = Soren::Parsers::Response::Headers.new(header_lines).parse
+          version_object = Soren::Types::Response::Version.new(parsed_status_line[:version])
+          code = Soren::Types::Response::Code.new(parsed_status_line[:code])
+          message_object = Soren::Types::Response::Message.new(parsed_status_line[:message])
+          headers_object = Soren::Types::Response::Headers.new(parsed_headers)
+          parsed_body = Soren::Parsers::Response::Body.new(
+            reader:  reader,
+            headers: headers_object,
             code:    code,
-            message: message_object,
-          },
-          headers:     headers_object,
-          body:        body_object,
-        }
+          ).parse
+          body_object = Soren::Types::Response::Body.new(parsed_body)
+
+          return {
+            status_line: {
+              version: version_object,
+              code:    code,
+              message: message_object,
+            },
+            headers:     headers_object,
+            body:        body_object,
+          }
+        end
       end
 
       private
