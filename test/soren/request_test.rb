@@ -82,12 +82,25 @@ module Soren
         'POST /users HTTP/1.1',
         'Content-Type: application/json',
         'Accept: application/json',
+        'Content-Length: 16',
         'Host: example.com',
         '',
         '{"name":"Alice"}',
       ].join("\r\n")
 
       assert_equal expected_http, request.to_http(host: 'example.com')
+    end
+
+    def test_to_http_does_not_duplicate_content_length_header
+      request = Request.new(
+        method:  :post,
+        target:  '/users',
+        headers: { 'Content-Length' => '99' },
+        body:    '{"name":"Alice"}',
+      )
+
+      assert_match 'Content-Length: 99', request.to_http(host: 'example.com')
+      assert_equal 1, request.to_http(host: 'example.com').scan('Content-Length').size
     end
 
     def test_to_http_does_not_duplicate_host_header

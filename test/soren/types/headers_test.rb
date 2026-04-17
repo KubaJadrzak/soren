@@ -61,6 +61,18 @@ module Soren
 
           assert_equal 'headers must be a Hash', error.message
         end
+
+        def test_rejects_symbol_keys
+          error = assert_raises(Soren::Error::ArgumentError) { Headers.new({ Accept: 'application/json' }) }
+
+          assert_equal 'header keys and values must be Strings', error.message
+        end
+
+        def test_rejects_non_string_values
+          error = assert_raises(Soren::Error::ArgumentError) { Headers.new({ 'Accept' => 42 }) }
+
+          assert_equal 'header keys and values must be Strings', error.message
+        end
       end
     end
   end

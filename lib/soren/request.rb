@@ -18,8 +18,8 @@ module Soren
     def initialize(method:, target:, headers: {}, body: nil)
       @method = Soren::Types::Request::Method.new(method) #: Soren::Types::Request::Method
       @target = Soren::Types::Request::Target.new(target) #: Soren::Types::Request::Target
-      @headers = Soren::Types::Request::Headers.new(headers) #: Soren::Types::Request::Headers
       @body = Soren::Types::Request::Body.new(body) #: Soren::Types::Request::Body
+      @headers = Soren::Types::Request::Headers.new(headers, content_length: @body.to_http&.bytesize) #: Soren::Types::Request::Headers
     end
 
     #: (host: String) -> String

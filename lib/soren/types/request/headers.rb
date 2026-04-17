@@ -5,12 +5,12 @@ module Soren
   module Types
     module Request
       class Headers
-        #: (untyped) -> void
-        def initialize(headers)
-          @headers = validate(headers) #: Hash[untyped, untyped]
+        #: (untyped, ?content_length: Integer?) -> void
+        def initialize(headers, content_length: nil)
+          @headers = validate(headers, content_length:) #: Hash[String, String]
         end
 
-        #: -> Hash[untyped, untyped]
+        #: -> Hash[String, String]
         def to_h
           @headers
         end
@@ -22,7 +22,7 @@ module Soren
           end
 
           request_headers = @headers.dup
-          unless request_headers.keys.any? { |key| key.to_s.casecmp('host').zero? }
+          unless request_headers.keys.any? { |key| key.casecmp?('host') }
             request_headers['Host'] = host
           end
 
@@ -31,10 +31,20 @@ module Soren
 
         private
 
-        #: (untyped) -> Hash[untyped, untyped]
-        def validate(headers)
+        #: (untyped, content_length: Integer?) -> Hash[String, String]
+        def validate(headers, content_length:)
           unless headers.is_a?(Hash)
             raise Soren::Error::ArgumentError, 'headers must be a Hash'
+          end
+
+          unless headers.all? { |k, v| k.is_a?(String) && v.is_a?(String) }
+            raise Soren::Error::ArgumentError, 'header keys and values must be Strings'
+          end
+
+          if !content_length.nil? &&
+             headers.keys.none? { |key| key.casecmp?('content-length') }
+
+            return headers.merge('Content-Length' => content_length.to_s)
           end
 
           headers
