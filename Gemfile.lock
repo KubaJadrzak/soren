@@ -6,12 +6,19 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.9.0)
+      public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
     benchmark (0.4.1)
+    bigdecimal (4.1.2)
     byebug (12.0.0)
+    crack (1.0.1)
+      bigdecimal
+      rexml
     date (3.4.1)
     erb (5.1.1)
     erubi (1.13.1)
+    hashdiff (1.2.1)
     io-console (0.8.1)
     irb (1.15.2)
       pp (>= 0.6.0)
@@ -34,6 +41,7 @@ GEM
     psych (5.2.6)
       date
       stringio
+    public_suffix (7.0.5)
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.2.1)
@@ -98,6 +106,11 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
+    vcr (6.4.0)
+    webmock (3.26.2)
+      addressable (>= 2.8.0)
+      crack (>= 0.3.2)
+      hashdiff (>= 0.4.0, < 2.0.0)
     yard (0.9.37)
     yard-sorbet (0.9.0)
       sorbet-runtime
@@ -117,6 +130,8 @@ DEPENDENCIES
   sorbet-runtime
   soren!
   tapioca
+  vcr
+  webmock
 
 BUNDLED WITH
    2.7.2

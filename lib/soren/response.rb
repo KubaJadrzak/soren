@@ -9,6 +9,18 @@ require_relative 'types/response/body'
 
 module Soren
   class Response
+
+    #: (Hash[Symbol, untyped]) -> void
+    def initialize(parsed_response)
+      parsed_status_line = parsed_response[:status_line]
+      @version = parsed_status_line[:version] #: Soren::Types::Response::Version
+      @code = parsed_status_line[:code] #: Soren::Types::Response::Code
+      @message = parsed_status_line[:message] #: Soren::Types::Response::Message
+
+      @headers = parsed_response[:headers] #: Soren::Types::Response::Headers
+      @body = parsed_response[:body] #: Soren::Types::Response::Body
+    end
+
     #: -> Integer
     def code
       @code.to_i
@@ -34,15 +46,19 @@ module Soren
       @body.to_s
     end
 
-    #: (Hash[Symbol, untyped]) -> void
-    def initialize(parsed_response)
-      parsed_status_line = parsed_response[:status_line]
-      @version = parsed_status_line[:version] #: Soren::Types::Response::Version
-      @code = parsed_status_line[:code] #: Soren::Types::Response::Code
-      @message = parsed_status_line[:message] #: Soren::Types::Response::Message
-
-      @headers = parsed_response[:headers] #: Soren::Types::Response::Headers
-      @body = parsed_response[:body] #: Soren::Types::Response::Body
+    class << self
+      #: (code: Integer, message: String, version: String, headers: Hash[String, Array[String]], body: String) -> Soren::Response
+      def from_parts(code:, message:, version:, headers:, body:)
+        new({
+              status_line: {
+                version: Types::Response::Version.new("HTTP/#{version}"),
+                code:    Types::Response::Code.new(code),
+                message: Types::Response::Message.new(message),
+              },
+              headers:     Types::Response::Headers.new(headers),
+              body:        Types::Response::Body.new(body),
+            })
+      end
     end
   end
 end

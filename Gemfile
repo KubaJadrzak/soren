@@ -17,3 +17,6 @@ gem 'sorbet-runtime'
 gem 'tapioca'
 
 gem 'byebug'
+
+gem 'vcr'
+gem 'webmock'
