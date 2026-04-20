@@ -140,6 +140,10 @@ end
 - `Soren::Error::ParseError`
 - `Soren::Error::ProtocolError`
 
+### Webmock
+
+`Soren` supports Webmock. In order to allow Webmock to work with `Soren` you need to `require 'soren/webmock'`
+
 ## Development
 
 Setup:
