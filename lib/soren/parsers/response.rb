@@ -36,24 +36,26 @@ module Soren
           header_lines = read_header_lines(reader)
           parsed_status_line = Soren::Parsers::Response::StatusLine.new(status_line.strip).parse
 
-          next if (100..199).cover?(parsed_status_line[:code])
+          code_object = Soren::Types::Response::Code.new(parsed_status_line[:code])
+          next if code_object.skip_parsing?
+
+          version_object = Soren::Types::Response::Version.new(parsed_status_line[:version])
+          message_object = Soren::Types::Response::Message.new(parsed_status_line[:message])
 
           parsed_headers = Soren::Parsers::Response::Headers.new(header_lines).parse
-          version_object = Soren::Types::Response::Version.new(parsed_status_line[:version])
-          code = Soren::Types::Response::Code.new(parsed_status_line[:code])
-          message_object = Soren::Types::Response::Message.new(parsed_status_line[:message])
           headers_object = Soren::Types::Response::Headers.new(parsed_headers)
+
           parsed_body = Soren::Parsers::Response::Body.new(
             reader:  reader,
             headers: headers_object,
-            code:    code,
+            code:    code_object,
           ).parse
           body_object = Soren::Types::Response::Body.new(parsed_body)
 
           return {
             status_line: {
               version: version_object,
-              code:    code,
+              code:    code_object,
               message: message_object,
             },
             headers:     headers_object,

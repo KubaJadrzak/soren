@@ -23,6 +23,11 @@ module Soren
           (100..199).cover?(@code) || @code == NO_CONTENT || @code == NOT_MODIFIED
         end
 
+        #: -> bool
+        def skip_parsing?
+          (100..199).cover?(@code)
+        end
+
         private
 
         #: (untyped) -> Integer
