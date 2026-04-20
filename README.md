@@ -5,9 +5,10 @@ Soren is a simple HTTP client library. At the current moment the library provide
 - HTTP and HTTPS support,
 - configurable read/connect/write timeouts,
 - response parsing with header/body decoding (including chunked, gzip, and deflate),
+- WebMock support,
 - explicit domain errors under `Soren::Error::*`.
 
-`Soren` is currently supported by my own HTTP client abstraction layer [Sofia](https://github.com/KubaJadrzak/sofia) and further implemented (alongside Sofia) into my integration with Espago Payment System [Shopik](https://github.com/KubaJadrzak/Shopik), and everything seems to be working pretty good :P
+`Soren` is currently supported by my own HTTP client abstraction layer [Sofia](https://github.com/KubaJadrzak/sofia) and further implemented (alongside `Sofia`) into my integration with Espago Payment System [Shopik](https://github.com/KubaJadrzak/Shopik), and everything seems to be working pretty good :P
 
 ## Quick Start
 
