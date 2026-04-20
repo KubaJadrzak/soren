@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.5] - 2026-04-20
+
+- Add WebMock support
+
 ## [0.1.4] - 2026-04-20
 
 - Final cleanup before (most likely) never touching this gem again :P
